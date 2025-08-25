@@ -1,13 +1,14 @@
 import { useEffect } from "react";
 import "./App.css";
 import { Outlet } from "react-router-dom";
-import useOsInfoStore from "./store/OsInfoStore";
-import MenuBar from "./components/menuBar/MenuBar";
-import useThemeStore from "./store/ThemeStore";
-import ContextMenuComponent from "./components/contextMenu/ContextMenuComponent";
+import useThemeStore from "./store/themeStore";
+import useOsInfoStore from "./store/osInfoStore";
 import { useContextMenuStore } from "./store/ContextMenuStore";
 import { useApplicationStore } from "./store/ApplicationStore";
+import MenuBar from "./components/menuBar/MenuBar";
+import ContextMenuComponent from "./components/contextMenu/ContextMenuComponent";
 import clsx from "clsx";
+
 
 function App() {
   const dark = useThemeStore((state) => state.dark);

@@ -1,4 +1,4 @@
-import { ApplicationState } from "@/interface/store/ApplicationStore";
+import { ApplicationState } from "@/interface/store/ApplicationStoreInterface";
 import { MetadataState } from "@/interface/types/MetadataInterface";
 import { addToast } from "@heroui/react";
 import { getVersion } from "@tauri-apps/api/app";
