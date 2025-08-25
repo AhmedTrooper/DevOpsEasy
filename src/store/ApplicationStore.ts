@@ -6,7 +6,7 @@ import { create } from "zustand";
 
 export const useApplicationStore = create<ApplicationState>((set, get) => ({
   metadataUrl:
-    "https://raw.githubusercontent.com/dalal12345/ReactTS-HeroUI-TauriV2-Tailwindv3.4/main/update/metadata.json",
+    "https://raw.githubusercontent.com/AhmedTrooper/DevOpsEasy/main/update/metadata.json",
   menuBarVisible: false,
   setMenuBarVisible: (status) => set({ menuBarVisible: status }),
   toggleMenuBar: () =>
