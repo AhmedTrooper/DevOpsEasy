@@ -7,6 +7,7 @@ import { HeroUIProvider, ToastProvider } from "@heroui/react";
 import "@fontsource-variable/inter";
 import Settings from "./routes/Settings";
 import "./index.css";
+import Image from "./routes/Image";
 
 ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
   <React.StrictMode>
@@ -25,6 +26,10 @@ ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
             <Route
               path="settings"
               element={<Settings />}
+            />
+             <Route
+              path="images"
+              element={<Image />}
             />
           </Route>
         </Routes>
