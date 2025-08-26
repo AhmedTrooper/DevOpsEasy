@@ -1,30 +1,15 @@
-import { Card, CardHeader, CardBody, CardFooter, Button } from "@heroui/react";
-import { Command } from "@tauri-apps/plugin-shell";
+import { useImageStore } from "@/store/ImageStore";
+import { Card, CardHeader, CardBody, CardFooter } from "@heroui/react";
+
 import { Box } from "lucide-react";
-import { useState } from "react";
+import { useEffect } from "react";
 import { Link } from "react-router-dom";
-
 export default function Home() {
-  const [images, setImages] = useState<any>([]);
-
-  const fetchImages = async () => {
-    const cmd = Command.create("docker", [
-      "images",
-      "--format",
-      "{{.ID}}|{{.Repository}}|{{.Tag}}",
-    ]);
-
-    const output = await cmd.execute();
-    const lines = (output.stdout || "").trim().split("\n");
-
-    const images = lines.map((line) => {
-      const [id, name, tag] = line.split("|");
-      return { id, name, tag };
-    });
-
-    console.log(images);
-    setImages(images);
-  };
+  const fetchImages = useImageStore((state) => state.fetchImages);
+  const images = useImageStore((state) => state.images);
+  useEffect(() => {
+    fetchImages();
+  }, [fetchImages]);
 
   return (
     <div className="p-8">
@@ -52,8 +37,6 @@ export default function Home() {
           </Link>
         </CardFooter>
       </Card>
-
-      <Button onPress={fetchImages}>Fetch Images</Button>
     </div>
   );
 }
