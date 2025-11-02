@@ -1,9 +1,34 @@
 import { useComposeStore } from "@/store/ComposeStore";
 import { useSettingsStore } from "@/store/SettingsStore";
-import { Card, CardBody, CardFooter, CardHeader, Button, Input } from "@heroui/react";
-import { Layers, Loader2, Play, Square, RotateCw, Trash2, RefreshCw, Search, X } from "lucide-react";
+import {
+  Card,
+  CardBody,
+  CardFooter,
+  CardHeader,
+  Button,
+  Input,
+  Modal,
+  ModalContent,
+  ModalHeader,
+  ModalBody,
+  ModalFooter,
+} from "@heroui/react";
+import {
+  Layers,
+  Loader2,
+  Play,
+  Square,
+  RotateCw,
+  Trash2,
+  RefreshCw,
+  Search,
+  X,
+  Upload,
+  FolderOpen,
+} from "lucide-react";
 import { useEffect, useState, useMemo } from "react";
 import clsx from "clsx";
+import { open } from "@tauri-apps/plugin-dialog";
 
 export default function Compose() {
   const projects = useComposeStore((state) => state.projects);
@@ -11,15 +36,49 @@ export default function Compose() {
   const error = useComposeStore((state) => state.error);
   const fetchProjects = useComposeStore((state) => state.fetchProjects);
   const operationLoading = useComposeStore((state) => state.operationLoading);
+  const upProject = useComposeStore((state) => state.upProject);
   const startProject = useComposeStore((state) => state.startProject);
   const stopProject = useComposeStore((state) => state.stopProject);
   const restartProject = useComposeStore((state) => state.restartProject);
   const downProject = useComposeStore((state) => state.downProject);
 
-  const autoRefreshEnabled = useSettingsStore((state) => state.autoRefreshEnabled);
-  const autoRefreshInterval = useSettingsStore((state) => state.autoRefreshInterval);
+  const autoRefreshEnabled = useSettingsStore(
+    (state) => state.autoRefreshEnabled
+  );
+  const autoRefreshInterval = useSettingsStore(
+    (state) => state.autoRefreshInterval
+  );
 
   const [searchQuery, setSearchQuery] = useState("");
+  const [upModalOpen, setUpModalOpen] = useState(false);
+  const [composePath, setComposePath] = useState("");
+  const [projectName, setProjectName] = useState("");
+
+  const handleSelectComposeFile = async () => {
+    const selected = await open({
+      multiple: false,
+      directory: false,
+      filters: [
+        {
+          name: "Docker Compose",
+          extensions: ["yml", "yaml"],
+        },
+      ],
+    });
+
+    if (selected) {
+      setComposePath(selected as string);
+    }
+  };
+
+  const handleUpProject = async () => {
+    if (!composePath) return;
+
+    await upProject(composePath, projectName || undefined);
+    setUpModalOpen(false);
+    setComposePath("");
+    setProjectName("");
+  };
 
   useEffect(() => {
     fetchProjects();
@@ -64,9 +123,7 @@ export default function Compose() {
   if (error) {
     return (
       <div className="p-8">
-        <div className="text-red-500 text-xl font-semibold">
-          Error: {error}
-        </div>
+        <div className="text-red-500 text-xl font-semibold">Error: {error}</div>
       </div>
     );
   }
@@ -82,15 +139,29 @@ export default function Compose() {
           <Layers />
           <span className="text-orange-500">Docker</span> Compose
         </h1>
-        <Button
-          color="default"
-          variant="flat"
-          onPress={() => fetchProjects()}
-          isDisabled={loading || operationLoading}
-          startContent={<RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />}
-        >
-          Refresh
-        </Button>
+        <div className="flex gap-2">
+          <Button
+            color="primary"
+            variant="solid"
+            onPress={() => setUpModalOpen(true)}
+            startContent={<Upload className="w-4 h-4" />}
+          >
+            Start from File
+          </Button>
+          <Button
+            color="default"
+            variant="flat"
+            onPress={() => fetchProjects()}
+            isDisabled={loading || operationLoading}
+            startContent={
+              <RefreshCw
+                className={`w-4 h-4 ${loading ? "animate-spin" : ""}`}
+              />
+            }
+          >
+            Refresh
+          </Button>
+        </div>
       </div>
 
       {/* Search Section */}
@@ -181,7 +252,11 @@ export default function Compose() {
                 <Button
                   color="danger"
                   onPress={() => {
-                    if (confirm(`Are you sure you want to remove project "${project.name}"? This will stop and remove all containers.`)) {
+                    if (
+                      confirm(
+                        `Are you sure you want to remove project "${project.name}"? This will stop and remove all containers.`
+                      )
+                    ) {
                       downProject(project.name);
                     }
                   }}
@@ -196,6 +271,62 @@ export default function Compose() {
           ))}
         </div>
       )}
+
+      {/* Start from File Modal */}
+      <Modal
+        isOpen={upModalOpen}
+        onClose={() => setUpModalOpen(false)}
+        size="lg"
+      >
+        <ModalContent>
+          <ModalHeader>Start Docker Compose from File</ModalHeader>
+          <ModalBody>
+            <div className="space-y-4">
+              <div>
+                <div className="flex gap-2 mb-2">
+                  <Input
+                    label="Compose File Path"
+                    placeholder="Select docker-compose.yml file"
+                    value={composePath}
+                    onChange={(e) => setComposePath(e.target.value)}
+                    description="Path to docker-compose.yml or docker-compose.yaml"
+                    isRequired
+                    className="flex-1"
+                  />
+                  <Button
+                    color="primary"
+                    variant="flat"
+                    onPress={handleSelectComposeFile}
+                    className="mt-6"
+                    startContent={<FolderOpen className="w-4 h-4" />}
+                  >
+                    Browse
+                  </Button>
+                </div>
+              </div>
+              <Input
+                label="Project Name (optional)"
+                placeholder="e.g., my-app"
+                value={projectName}
+                onChange={(e) => setProjectName(e.target.value)}
+                description="Custom project name (uses directory name if not specified)"
+              />
+            </div>
+          </ModalBody>
+          <ModalFooter>
+            <Button
+              color="primary"
+              onPress={handleUpProject}
+              isDisabled={!composePath.trim()}
+            >
+              Start Project
+            </Button>
+            <Button color="default" onPress={() => setUpModalOpen(false)}>
+              Cancel
+            </Button>
+          </ModalFooter>
+        </ModalContent>
+      </Modal>
     </div>
   );
 }

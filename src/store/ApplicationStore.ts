@@ -49,7 +49,7 @@ export const useApplicationStore = create<ApplicationState>((set, get) => ({
             title: "Application Update Available",
             description: `Online : ${onlineApplicationVersion}, Local: ${localApplicationVersion}`,
             color: "success",
-            timeout: 3000,
+            timeout: 1500,
           });
           applicationStore.setApplicationUpdateAvailable(true);
         }
@@ -60,7 +60,7 @@ export const useApplicationStore = create<ApplicationState>((set, get) => ({
           title: "Update check failed",
           description: errorMessage,
           color: "danger",
-          timeout: 3000,
+          timeout: 1500,
         });
       }
     } catch (error) {
@@ -71,7 +71,7 @@ export const useApplicationStore = create<ApplicationState>((set, get) => ({
         title: "Update check error",
         description: errorMessage,
         color: "danger",
-        timeout: 3000,
+        timeout: 1500,
       });
     }
   },

@@ -30,7 +30,10 @@ export const useImageStore = create<ImageState>((set, get) => ({
   setBuildLoading: (status) => set({ buildLoading: status }),
   appendBuildOutput: (output) => set({ buildOutput: get().buildOutput + output }),
   clearBuildOutput: () => set({ buildOutput: "" }),
+  
   fetchImages: async () => {
+    if (get().loading) return;
+    
     set({ loading: true, error: null });
     try {
       const cmd = Command.create("docker", [
@@ -65,12 +68,6 @@ export const useImageStore = create<ImageState>((set, get) => ({
         });
 
       set({ images, loading: false });
-      addToast({
-        title: "Success",
-        description: `Loaded ${images.length} Docker images`,
-        color: "success",
-        timeout: 2000,
-      });
     } catch (error) {
       const errorMessage =
         error instanceof Error ? error.message : "Unknown error occurred";
@@ -79,7 +76,7 @@ export const useImageStore = create<ImageState>((set, get) => ({
         title: "Error fetching images",
         description: errorMessage,
         color: "danger",
-        timeout: 3000,
+        timeout: 1500,
       });
     }
   },
@@ -98,7 +95,7 @@ export const useImageStore = create<ImageState>((set, get) => ({
         title: "Success",
         description: "Image deleted successfully",
         color: "success",
-        timeout: 2000,
+        timeout: 1000,
       });
       
       await get().fetchImages();
@@ -109,7 +106,7 @@ export const useImageStore = create<ImageState>((set, get) => ({
         title: "Error deleting image",
         description: errorMessage,
         color: "danger",
-        timeout: 3000,
+        timeout: 1500,
       });
     } finally {
       set({ operationLoading: false });
@@ -126,7 +123,7 @@ export const useImageStore = create<ImageState>((set, get) => ({
         title: "Pulling image",
         description: `Pulling ${imageName}...`,
         color: "primary",
-        timeout: 2000,
+        timeout: 1000,
       });
 
       const cmd = Command.create("docker", ["pull", imageName]);
@@ -167,7 +164,7 @@ export const useImageStore = create<ImageState>((set, get) => ({
         title: "Success",
         description: `Image ${imageName} pulled successfully`,
         color: "success",
-        timeout: 2000,
+        timeout: 1000,
       });
       
       await get().fetchImages();
@@ -181,7 +178,7 @@ export const useImageStore = create<ImageState>((set, get) => ({
         title: "Error pulling image",
         description: errorMessage,
         color: "danger",
-        timeout: 3000,
+        timeout: 1500,
       });
     } finally {
       set({ operationLoading: false });
@@ -202,7 +199,7 @@ export const useImageStore = create<ImageState>((set, get) => ({
         title: "Success",
         description: `Image tagged as ${newTag}`,
         color: "success",
-        timeout: 2000,
+        timeout: 1000,
       });
       
       await get().fetchImages();
@@ -213,7 +210,7 @@ export const useImageStore = create<ImageState>((set, get) => ({
         title: "Error tagging image",
         description: errorMessage,
         color: "danger",
-        timeout: 3000,
+        timeout: 1500,
       });
     } finally {
       set({ operationLoading: false });
@@ -227,7 +224,7 @@ export const useImageStore = create<ImageState>((set, get) => ({
         title: "Pushing image",
         description: `Pushing ${imageName} to registry...`,
         color: "primary",
-        timeout: 2000,
+        timeout: 1000,
       });
 
       const cmd = Command.create("docker", ["push", imageName]);
@@ -241,7 +238,7 @@ export const useImageStore = create<ImageState>((set, get) => ({
         title: "Success",
         description: `Image ${imageName} pushed successfully`,
         color: "success",
-        timeout: 2000,
+        timeout: 1000,
       });
     } catch (error) {
       const errorMessage =
@@ -250,7 +247,7 @@ export const useImageStore = create<ImageState>((set, get) => ({
         title: "Error pushing image",
         description: errorMessage,
         color: "danger",
-        timeout: 3000,
+        timeout: 1500,
       });
     } finally {
       set({ operationLoading: false });
@@ -271,7 +268,7 @@ export const useImageStore = create<ImageState>((set, get) => ({
         title: "Success",
         description: `Image saved to ${outputPath}`,
         color: "success",
-        timeout: 2000,
+        timeout: 1000,
       });
     } catch (error) {
       const errorMessage =
@@ -280,7 +277,7 @@ export const useImageStore = create<ImageState>((set, get) => ({
         title: "Error saving image",
         description: errorMessage,
         color: "danger",
-        timeout: 3000,
+        timeout: 1500,
       });
     } finally {
       set({ operationLoading: false });
@@ -301,7 +298,7 @@ export const useImageStore = create<ImageState>((set, get) => ({
         title: "Success",
         description: "Image loaded successfully",
         color: "success",
-        timeout: 2000,
+        timeout: 1000,
       });
       
       await get().fetchImages();
@@ -312,7 +309,7 @@ export const useImageStore = create<ImageState>((set, get) => ({
         title: "Error loading image",
         description: errorMessage,
         color: "danger",
-        timeout: 3000,
+        timeout: 1500,
       });
     } finally {
       set({ operationLoading: false });
@@ -333,7 +330,7 @@ export const useImageStore = create<ImageState>((set, get) => ({
         title: "Success",
         description: "Unused images removed successfully",
         color: "success",
-        timeout: 2000,
+        timeout: 1000,
       });
       
       await get().fetchImages();
@@ -344,7 +341,7 @@ export const useImageStore = create<ImageState>((set, get) => ({
         title: "Error pruning images",
         description: errorMessage,
         color: "danger",
-        timeout: 3000,
+        timeout: 1500,
       });
     } finally {
       set({ operationLoading: false });
@@ -370,7 +367,7 @@ export const useImageStore = create<ImageState>((set, get) => ({
         title: "Error searching images",
         description: errorMessage,
         color: "danger",
-        timeout: 3000,
+        timeout: 1500,
       });
     }
   },
@@ -436,7 +433,7 @@ export const useImageStore = create<ImageState>((set, get) => ({
         title: "Error inspecting image",
         description: errorMessage,
         color: "danger",
-        timeout: 3000,
+        timeout: 1500,
       });
     }
   },
@@ -473,7 +470,7 @@ export const useImageStore = create<ImageState>((set, get) => ({
           title: "Build failed",
           description: "Check the build output for details",
           color: "danger",
-          timeout: 5000,
+          timeout: 1000,
         });
       } else {
         const successOutput = output.stdout || "";
@@ -485,10 +482,9 @@ export const useImageStore = create<ImageState>((set, get) => ({
           title: "Build successful",
           description: `Image ${imageName} built successfully`,
           color: "success",
-          timeout: 3000,
+          timeout: 1500,
         });
         
-        // Refresh the images list
         await get().fetchImages();
       }
     } catch (error) {
@@ -503,7 +499,7 @@ export const useImageStore = create<ImageState>((set, get) => ({
         title: "Error building image",
         description: errorMessage,
         color: "danger",
-        timeout: 3000,
+        timeout: 1500,
       });
     }
   },

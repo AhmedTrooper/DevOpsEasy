@@ -15,13 +15,17 @@ export const useComposeStore = create<ComposeState>((set, get) => ({
   setOperationLoading: (status) => set({ operationLoading: status }),
 
   fetchProjects: async () => {
+    if (get().loading) return;
+
     set({ loading: true, error: null });
     try {
       const cmd = Command.create("docker", ["compose", "ls", "--all"]);
       const output = await cmd.execute();
 
       if (output.code !== 0) {
-        throw new Error(output.stderr || "Failed to fetch Docker Compose projects");
+        throw new Error(
+          output.stderr || "Failed to fetch Docker Compose projects"
+        );
       }
 
       const lines = (output.stdout || "").trim().split("\n");
@@ -33,7 +37,7 @@ export const useComposeStore = create<ComposeState>((set, get) => ({
         .map((line) => {
           // Docker compose ls outputs: NAME  STATUS  CONFIG FILES
           const parts = line.trim().split(/\s{2,}/); // Split by 2+ spaces
-          
+
           return {
             name: parts[0] || "",
             status: parts[1] || "",
@@ -42,12 +46,6 @@ export const useComposeStore = create<ComposeState>((set, get) => ({
         });
 
       set({ projects, loading: false });
-      addToast({
-        title: "Success",
-        description: `Loaded ${projects.length} Docker Compose projects`,
-        color: "success",
-        timeout: 2000,
-      });
     } catch (error) {
       const errorMessage =
         error instanceof Error ? error.message : "Unknown error occurred";
@@ -56,15 +54,70 @@ export const useComposeStore = create<ComposeState>((set, get) => ({
         title: "Error fetching compose projects",
         description: errorMessage,
         color: "danger",
-        timeout: 3000,
+        timeout: 1500,
       });
+    }
+  },
+
+  upProject: async (filePath: string, projectName?: string) => {
+    set({ operationLoading: true });
+    try {
+      const args = ["compose", "-f", filePath];
+
+      if (projectName) {
+        args.push("-p", projectName);
+      }
+
+      args.push("up", "-d");
+
+      const cmd = Command.create("docker", args);
+      const output = await cmd.execute();
+
+      console.log("Docker compose command:", "docker", args.join(" "));
+      console.log("Exit code:", output.code);
+      console.log("Stdout:", output.stdout);
+      console.log("Stderr:", output.stderr);
+
+      if (output.code !== 0) {
+        const errorMsg = output.stderr || output.stdout || "Failed to start compose project";
+        throw new Error(errorMsg);
+      }
+
+      const outputText = output.stdout || output.stderr || "";
+      
+      addToast({
+        title: "Compose Started",
+        description: outputText.split('\n').slice(0, 3).join(' ') || "Check console for details",
+        color: "success",
+        timeout: 2000,
+      });
+
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+      await get().fetchProjects();
+    } catch (error) {
+      const errorMessage =
+        error instanceof Error ? error.message : "Unknown error occurred";
+      addToast({
+        title: "Error starting compose project",
+        description: errorMessage,
+        color: "danger",
+        timeout: 1500,
+      });
+    } finally {
+      set({ operationLoading: false });
     }
   },
 
   startProject: async (projectName: string) => {
     set({ operationLoading: true });
     try {
-      const cmd = Command.create("docker", ["compose", "-p", projectName, "start"]);
+      const cmd = Command.create("docker", [
+        "compose",
+        "-p",
+        projectName,
+        "up",
+        "-d",
+      ]);
       const output = await cmd.execute();
 
       if (output.code !== 0) {
@@ -75,7 +128,7 @@ export const useComposeStore = create<ComposeState>((set, get) => ({
         title: "Project Started",
         description: `Project ${projectName} started successfully`,
         color: "success",
-        timeout: 2000,
+        timeout: 1000,
       });
 
       await get().fetchProjects();
@@ -86,7 +139,7 @@ export const useComposeStore = create<ComposeState>((set, get) => ({
         title: "Error starting project",
         description: errorMessage,
         color: "danger",
-        timeout: 3000,
+        timeout: 1500,
       });
     } finally {
       set({ operationLoading: false });
@@ -96,7 +149,12 @@ export const useComposeStore = create<ComposeState>((set, get) => ({
   stopProject: async (projectName: string) => {
     set({ operationLoading: true });
     try {
-      const cmd = Command.create("docker", ["compose", "-p", projectName, "stop"]);
+      const cmd = Command.create("docker", [
+        "compose",
+        "-p",
+        projectName,
+        "stop",
+      ]);
       const output = await cmd.execute();
 
       if (output.code !== 0) {
@@ -107,7 +165,7 @@ export const useComposeStore = create<ComposeState>((set, get) => ({
         title: "Project Stopped",
         description: `Project ${projectName} stopped successfully`,
         color: "success",
-        timeout: 2000,
+        timeout: 1000,
       });
 
       await get().fetchProjects();
@@ -118,7 +176,7 @@ export const useComposeStore = create<ComposeState>((set, get) => ({
         title: "Error stopping project",
         description: errorMessage,
         color: "danger",
-        timeout: 3000,
+        timeout: 1500,
       });
     } finally {
       set({ operationLoading: false });
@@ -128,7 +186,12 @@ export const useComposeStore = create<ComposeState>((set, get) => ({
   restartProject: async (projectName: string) => {
     set({ operationLoading: true });
     try {
-      const cmd = Command.create("docker", ["compose", "-p", projectName, "restart"]);
+      const cmd = Command.create("docker", [
+        "compose",
+        "-p",
+        projectName,
+        "restart",
+      ]);
       const output = await cmd.execute();
 
       if (output.code !== 0) {
@@ -139,7 +202,7 @@ export const useComposeStore = create<ComposeState>((set, get) => ({
         title: "Project Restarted",
         description: `Project ${projectName} restarted successfully`,
         color: "success",
-        timeout: 2000,
+        timeout: 1000,
       });
 
       await get().fetchProjects();
@@ -150,7 +213,7 @@ export const useComposeStore = create<ComposeState>((set, get) => ({
         title: "Error restarting project",
         description: errorMessage,
         color: "danger",
-        timeout: 3000,
+        timeout: 1500,
       });
     } finally {
       set({ operationLoading: false });
@@ -160,7 +223,12 @@ export const useComposeStore = create<ComposeState>((set, get) => ({
   downProject: async (projectName: string) => {
     set({ operationLoading: true });
     try {
-      const cmd = Command.create("docker", ["compose", "-p", projectName, "down"]);
+      const cmd = Command.create("docker", [
+        "compose",
+        "-p",
+        projectName,
+        "down",
+      ]);
       const output = await cmd.execute();
 
       if (output.code !== 0) {
@@ -171,7 +239,7 @@ export const useComposeStore = create<ComposeState>((set, get) => ({
         title: "Project Removed",
         description: `Project ${projectName} removed successfully`,
         color: "success",
-        timeout: 2000,
+        timeout: 1000,
       });
 
       await get().fetchProjects();
@@ -182,7 +250,7 @@ export const useComposeStore = create<ComposeState>((set, get) => ({
         title: "Error removing project",
         description: errorMessage,
         color: "danger",
-        timeout: 3000,
+        timeout: 1500,
       });
     } finally {
       set({ operationLoading: false });

@@ -26,6 +26,10 @@ export const RouteList: RouteListInterface = [
     url: "compose",
   },
   {
+    name: "System",
+    url: "system",
+  },
+  {
     name: "Stats",
     url: "stats",
   },

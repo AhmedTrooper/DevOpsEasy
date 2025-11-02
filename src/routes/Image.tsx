@@ -1,8 +1,13 @@
 import { useImageStore } from "@/store/ImageStore";
+import { useContainerStore } from "@/store/ContainerStore";
 import { useSettingsStore } from "@/store/SettingsStore";
 import { Card, CardBody, CardFooter, CardHeader, Button, Input, Modal, ModalContent, ModalHeader, ModalBody, ModalFooter } from "@heroui/react";
-import { List, Loader2, Trash2, Download, RefreshCw, Search, X, Info, Hammer, Tag, Upload, Save, FileUp, Trash, SearchIcon } from "lucide-react";
+import { List, Loader2, Trash2, Download, RefreshCw, Search, X, Info, Hammer, Tag, Upload, Save, FileUp, Trash, SearchIcon, FolderOpen, PlayCircle, Copy, Terminal } from "lucide-react";
 import { useState, useEffect, useMemo, useRef } from "react";
+import { open } from '@tauri-apps/plugin-dialog';
+import { save as saveDialog } from '@tauri-apps/plugin-dialog';
+import { writeText } from "@tauri-apps/plugin-clipboard-manager";
+import { addToast } from "@heroui/react";
 
 export default function Image() {
   const images = useImageStore((state) => state.images);
@@ -29,6 +34,8 @@ export default function Image() {
   const searchImages = useImageStore((state) => state.searchImages);
   const searchResults = useImageStore((state) => state.searchResults);
   const searchLoading = useImageStore((state) => state.searchLoading);
+
+  const createContainer = useContainerStore((state) => state.createContainer);
   
   const autoRefreshEnabled = useSettingsStore((state) => state.autoRefreshEnabled);
   const autoRefreshInterval = useSettingsStore((state) => state.autoRefreshInterval);
@@ -43,6 +50,10 @@ export default function Image() {
   const [searchModalOpen, setSearchModalOpen] = useState(false);
   const [pushConfirmModalOpen, setPushConfirmModalOpen] = useState(false);
   const [pruneConfirmModalOpen, setPruneConfirmModalOpen] = useState(false);
+  const [deleteConfirmModalOpen, setDeleteConfirmModalOpen] = useState(false);
+  const [createContainerModalOpen, setCreateContainerModalOpen] = useState(false);
+  const [commandModalOpen, setCommandModalOpen] = useState(false);
+  const [generatedCommand, setGeneratedCommand] = useState("");
   const [selectedImage, setSelectedImage] = useState<{ id: string; name: string} | null>(null);
   const [buildImageName, setBuildImageName] = useState("");
   const [dockerfilePath, setDockerfilePath] = useState("");
@@ -51,6 +62,11 @@ export default function Image() {
   const [savePath, setSavePath] = useState("");
   const [loadPath, setLoadPath] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
+  const [containerName, setContainerName] = useState("");
+  const [containerPorts, setContainerPorts] = useState("");
+  const [containerEnv, setContainerEnv] = useState("");
+  const [containerVolumes, setContainerVolumes] = useState("");
+  const [containerCommand, setContainerCommand] = useState("");
   const buildEndRef = useRef<HTMLDivElement>(null);
   const pullEndRef = useRef<HTMLDivElement>(null);
 
@@ -84,10 +100,16 @@ export default function Image() {
     });
   }, [images, searchQuery]);
 
-  const handleDelete = async (imageId: string) => {
-    if (confirm("Are you sure you want to delete this image?")) {
-      await deleteImage(imageId);
-    }
+  const handleOpenDeleteConfirm = (imageId: string, imageName: string) => {
+    setSelectedImage({ id: imageId, name: imageName });
+    setDeleteConfirmModalOpen(true);
+  };
+
+  const handleDelete = async () => {
+    if (!selectedImage) return;
+    await deleteImage(selectedImage.id);
+    setDeleteConfirmModalOpen(false);
+    setSelectedImage(null);
   };
 
   const handlePull = async () => {
@@ -128,6 +150,38 @@ export default function Image() {
     setDockerfilePath("");
     setContextPath("");
     clearBuildOutput();
+  };
+
+  const handleSelectDockerfile = async () => {
+    try {
+      const selected = await open({
+        title: 'Select Dockerfile',
+        multiple: false,
+        directory: false
+      });
+      
+      if (selected && typeof selected === 'string') {
+        setDockerfilePath(selected);
+      }
+    } catch (error) {
+      console.error('Failed to select Dockerfile:', error);
+    }
+  };
+
+  const handleSelectContextPath = async () => {
+    try {
+      const selected = await open({
+        title: 'Select Build Context Directory',
+        multiple: false,
+        directory: true
+      });
+      
+      if (selected && typeof selected === 'string') {
+        setContextPath(selected);
+      }
+    } catch (error) {
+      console.error('Failed to select context path:', error);
+    }
   };
 
   const handleBuild = async () => {
@@ -177,10 +231,26 @@ export default function Image() {
     handleClosePush();
   };
 
-  const handleOpenSave = (imageId: string, imageName: string) => {
-    setSelectedImage({ id: imageId, name: imageName });
-    setSavePath(`/tmp/${imageName.replace(/:/g, '_')}.tar`);
-    setSaveModalOpen(true);
+  const handleOpenSave = async (imageId: string, imageName: string) => {
+    try {
+      const selected = await saveDialog({
+        title: 'Save Image as TAR',
+        defaultPath: `${imageName.replace(/:/g, '_')}.tar`,
+        filters: [{
+          name: 'TAR Files',
+          extensions: ['tar']
+        }]
+      });
+      
+      if (selected) {
+        setSelectedImage({ id: imageId, name: imageName });
+        setSavePath(selected);
+        // Directly save without opening modal
+        await saveImage(imageName, selected);
+      }
+    } catch (error) {
+      console.error('Failed to save image:', error);
+    }
   };
 
   const handleCloseSave = () => {
@@ -193,6 +263,26 @@ export default function Image() {
     if (!savePath.trim() || !selectedImage) return;
     await saveImage(selectedImage.name, savePath.trim());
     handleCloseSave();
+  };
+
+  const handleSelectLoadFile = async () => {
+    try {
+      const selected = await open({
+        title: 'Select TAR file to load',
+        multiple: false,
+        directory: false,
+        filters: [{
+          name: 'TAR Files',
+          extensions: ['tar']
+        }]
+      });
+      
+      if (selected && typeof selected === 'string') {
+        setLoadPath(selected);
+      }
+    } catch (error) {
+      console.error('Failed to select tar file:', error);
+    }
   };
 
   const handleOpenLoad = () => {
@@ -209,6 +299,56 @@ export default function Image() {
     if (!loadPath.trim()) return;
     await loadImage(loadPath.trim());
     handleCloseLoad();
+  };
+
+  const handleOpenCreateContainer = (imageName: string) => {
+    setSelectedImage({ id: "", name: imageName });
+    setCreateContainerModalOpen(true);
+  };
+
+  const handleCreateContainerFromImage = async () => {
+    if (!selectedImage) return;
+    
+    const ports = containerPorts.trim() ? containerPorts.split(',').map(p => p.trim()).filter(Boolean) : undefined;
+    const env = containerEnv.trim() ? containerEnv.split(',').map(e => e.trim()).filter(Boolean) : undefined;
+    const volumes = containerVolumes.trim() ? containerVolumes.split(',').map(v => v.trim()).filter(Boolean) : undefined;
+    const name = containerName.trim() || undefined;
+    const command = containerCommand.trim() || undefined;
+    
+    const dockerCommand = await createContainer(selectedImage.name, name, ports, env, volumes, command);
+    
+    if (dockerCommand) {
+      setGeneratedCommand(dockerCommand);
+      setCommandModalOpen(true);
+    }
+    
+    // Close modal and reset
+    setCreateContainerModalOpen(false);
+    setContainerName("");
+    setContainerPorts("");
+    setContainerEnv("");
+    setContainerVolumes("");
+    setContainerCommand("");
+    setSelectedImage(null);
+  };
+
+  const handleCopyCommand = async () => {
+    try {
+      await writeText(generatedCommand);
+      addToast({
+        title: "Copied to Clipboard",
+        description: "Docker command copied successfully",
+        color: "success",
+        timeout: 1000,
+      });
+    } catch (error) {
+      addToast({
+        title: "Copy Failed",
+        description: "Failed to copy command to clipboard",
+        color: "danger",
+        timeout: 1500,
+      });
+    }
   };
 
   const handleOpenPrune = () => {
@@ -422,6 +562,14 @@ export default function Image() {
               </CardBody>
               <CardFooter className="gap-2 flex-wrap">
                 <Button
+                  color="success"
+                  onPress={() => handleOpenCreateContainer(`${image.repository}:${image.tag}`)}
+                  isDisabled={operationLoading}
+                  startContent={<PlayCircle className="w-4 h-4" />}
+                >
+                  Create Container
+                </Button>
+                <Button
                   color="secondary"
                   onPress={() => handleOpenInspect(image.id!, `${image.repository}:${image.tag}`)}
                   isDisabled={operationLoading}
@@ -455,7 +603,7 @@ export default function Image() {
                 </Button>
                 <Button
                   color="danger"
-                  onPress={() => handleDelete(image.id!)}
+                  onPress={() => handleOpenDeleteConfirm(image.id!, `${image.repository}:${image.tag}`)}
                   isDisabled={operationLoading}
                   isLoading={operationLoading}
                   startContent={!operationLoading && <Trash2 className="w-4 h-4" />}
@@ -701,32 +849,56 @@ export default function Image() {
                 isDisabled={buildLoading}
                 description="Format: name:tag (tag defaults to 'latest')"
               />
-              <Input
-                label="Dockerfile Path"
-                placeholder="e.g., /path/to/Dockerfile"
-                value={dockerfilePath}
-                onChange={(e) => setDockerfilePath(e.target.value)}
-                isDisabled={buildLoading}
-                description="Absolute path to the Dockerfile"
-              />
-              <Input
-                label="Build Context Path"
-                placeholder="e.g., /path/to/context"
-                value={contextPath}
-                onChange={(e) => setContextPath(e.target.value)}
-                isDisabled={buildLoading}
-                description="Absolute path to the build context directory"
-              />
+              <div className="flex gap-2">
+                <Input
+                  label="Dockerfile Path"
+                  placeholder="e.g., /path/to/Dockerfile"
+                  value={dockerfilePath}
+                  onChange={(e) => setDockerfilePath(e.target.value)}
+                  isDisabled={buildLoading}
+                  description="Absolute path to the Dockerfile"
+                  className="flex-1"
+                />
+                <Button
+                  color="default"
+                  onPress={handleSelectDockerfile}
+                  isDisabled={buildLoading}
+                  className="mt-6"
+                  startContent={<FolderOpen className="w-4 h-4" />}
+                >
+                  Browse
+                </Button>
+              </div>
+              <div className="flex gap-2">
+                <Input
+                  label="Build Context Path"
+                  placeholder="e.g., /path/to/context"
+                  value={contextPath}
+                  onChange={(e) => setContextPath(e.target.value)}
+                  isDisabled={buildLoading}
+                  description="Absolute path to the build context directory"
+                  className="flex-1"
+                />
+                <Button
+                  color="default"
+                  onPress={handleSelectContextPath}
+                  isDisabled={buildLoading}
+                  className="mt-6"
+                  startContent={<FolderOpen className="w-4 h-4" />}
+                >
+                  Browse
+                </Button>
+              </div>
 
               {/* Build Output */}
               {buildOutput && (
                 <div className="mt-4">
                   <h3 className="text-sm font-semibold mb-2">Build Output:</h3>
                   <div
-                    className="bg-black text-green-400 p-4 rounded font-mono text-sm overflow-auto"
-                    style={{ maxHeight: "300px" }}
+                    className="bg-black text-green-400 p-4 rounded font-mono text-sm overflow-auto select-text"
+                    style={{ maxHeight: "300px", userSelect: "text" }}
                   >
-                    <pre className="whitespace-pre-wrap">{buildOutput}</pre>
+                    <pre className="whitespace-pre-wrap select-text" style={{ userSelect: "text" }}>{buildOutput}</pre>
                     <div ref={buildEndRef} />
                   </div>
                 </div>
@@ -847,15 +1019,26 @@ export default function Image() {
           <ModalHeader>Load Image from TAR</ModalHeader>
           <ModalBody>
             <div className="space-y-4">
-              <Input
-                autoFocus
-                label="TAR File Path"
-                placeholder="e.g., /tmp/myimage.tar"
-                value={loadPath}
-                onChange={(e) => setLoadPath(e.target.value)}
-                onKeyDown={(e) => e.key === "Enter" && handleLoad()}
-                description="Absolute path to the TAR file to load"
-              />
+              <div className="flex gap-2">
+                <Input
+                  autoFocus
+                  label="TAR File Path"
+                  placeholder="e.g., /tmp/myimage.tar"
+                  value={loadPath}
+                  onChange={(e) => setLoadPath(e.target.value)}
+                  onKeyDown={(e) => e.key === "Enter" && handleLoad()}
+                  description="Absolute path to the TAR file to load"
+                  className="flex-1"
+                />
+                <Button
+                  color="default"
+                  onPress={handleSelectLoadFile}
+                  className="mt-6"
+                  startContent={<FolderOpen className="w-4 h-4" />}
+                >
+                  Browse
+                </Button>
+              </div>
             </div>
           </ModalBody>
           <ModalFooter>
@@ -958,6 +1141,33 @@ export default function Image() {
         </ModalContent>
       </Modal>
 
+      {/* Delete Confirmation Modal */}
+      <Modal
+        isOpen={deleteConfirmModalOpen}
+        onClose={() => setDeleteConfirmModalOpen(false)}
+        placement="center"
+        size="md"
+      >
+        <ModalContent>
+          <ModalHeader className="text-danger">Confirm Delete Image</ModalHeader>
+          <ModalBody>
+            <p>Are you sure you want to delete image <strong>{selectedImage?.name}</strong>?</p>
+            <p className="text-sm text-gray-500 mt-2">This action cannot be undone.</p>
+          </ModalBody>
+          <ModalFooter>
+            <Button
+              color="danger"
+              onPress={handleDelete}
+            >
+              Delete
+            </Button>
+            <Button color="default" onPress={() => setDeleteConfirmModalOpen(false)}>
+              Cancel
+            </Button>
+          </ModalFooter>
+        </ModalContent>
+      </Modal>
+
       {/* Prune Confirmation Modal */}
       <Modal
         isOpen={pruneConfirmModalOpen}
@@ -986,6 +1196,110 @@ export default function Image() {
             </Button>
             <Button color="default" onPress={handleClosePrune}>
               Cancel
+            </Button>
+          </ModalFooter>
+        </ModalContent>
+      </Modal>
+
+      {/* Create Container from Image Modal */}
+      <Modal
+        isOpen={createContainerModalOpen}
+        onClose={() => setCreateContainerModalOpen(false)}
+        size="2xl"
+        scrollBehavior="inside"
+      >
+        <ModalContent>
+          <ModalHeader>Create Container from Image: {selectedImage?.name}</ModalHeader>
+          <ModalBody>
+            <div className="space-y-4">
+              <Input
+                label="Container Name (optional)"
+                placeholder="e.g., my-container"
+                value={containerName}
+                onChange={(e) => setContainerName(e.target.value)}
+                description="Custom name for the container"
+              />
+              <Input
+                label="Port Mappings (optional)"
+                placeholder="e.g., 8080:80, 3000:3000"
+                value={containerPorts}
+                onChange={(e) => setContainerPorts(e.target.value)}
+                description="Comma-separated port mappings (host:container)"
+              />
+              <Input
+                label="Environment Variables (optional)"
+                placeholder="e.g., NODE_ENV=production, API_KEY=abc123"
+                value={containerEnv}
+                onChange={(e) => setContainerEnv(e.target.value)}
+                description="Comma-separated environment variables (KEY=value)"
+              />
+              <Input
+                label="Volume Mounts (optional)"
+                placeholder="e.g., /host/path:/container/path"
+                value={containerVolumes}
+                onChange={(e) => setContainerVolumes(e.target.value)}
+                description="Comma-separated volume mounts (host:container)"
+              />
+              <Input
+                label="Command (IMPORTANT - keeps container running)"
+                placeholder="sleep infinity"
+                value={containerCommand}
+                onChange={(e) => setContainerCommand(e.target.value)}
+                description="⚠️ Required for most images to prevent immediate exit. Use 'sleep infinity' for Alpine/Ubuntu."
+                classNames={{
+                  label: "font-semibold text-warning",
+                }}
+              />
+            </div>
+          </ModalBody>
+          <ModalFooter>
+            <Button
+              color="success"
+              onPress={handleCreateContainerFromImage}
+            >
+              Create Container
+            </Button>
+            <Button color="default" onPress={() => setCreateContainerModalOpen(false)}>
+              Cancel
+            </Button>
+          </ModalFooter>
+        </ModalContent>
+      </Modal>
+
+      {/* Generated Command Modal */}
+      <Modal
+        isOpen={commandModalOpen}
+        onClose={() => setCommandModalOpen(false)}
+        placement="center"
+        size="2xl"
+      >
+        <ModalContent>
+          <ModalHeader className="flex items-center gap-2">
+            <Terminal className="w-5 h-5" />
+            Docker Run Command
+          </ModalHeader>
+          <ModalBody>
+            <div className="space-y-4">
+              <p className="text-sm text-default-500">
+                Copy and paste this command in your terminal to create the container:
+              </p>
+              <div className="bg-default-100 p-4 rounded-lg relative">
+                <pre className="text-sm select-text overflow-x-auto" style={{ userSelect: "text" }}>
+                  {generatedCommand}
+                </pre>
+              </div>
+            </div>
+          </ModalBody>
+          <ModalFooter>
+            <Button
+              color="primary"
+              startContent={<Copy className="w-4 h-4" />}
+              onPress={handleCopyCommand}
+            >
+              Copy Command
+            </Button>
+            <Button color="default" onPress={() => setCommandModalOpen(false)}>
+              Close
             </Button>
           </ModalFooter>
         </ModalContent>

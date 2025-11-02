@@ -12,6 +12,13 @@ import Container from "./routes/Container";
 import Volume from "./routes/Volume";
 import Network from "./routes/Network";
 import Compose from "./routes/Compose";
+import System from "./routes/System";
+
+// Disable right-click context menu globally
+document.addEventListener('contextmenu', (e) => {
+  e.preventDefault();
+  return false;
+}, false);
 import Stats from "./routes/Stats";
 
 ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
@@ -51,6 +58,10 @@ ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
             <Route
               path="compose"
               element={<Compose />}
+            />
+            <Route
+              path="system"
+              element={<System />}
             />
             <Route
               path="stats"

@@ -2,7 +2,9 @@
   "$schema": "../gen/schemas/desktop-schema.json",
   "identifier": "default",
   "description": "Capability for the main window",
-  "windows": ["main"],
+  "windows": [
+    "main"
+  ],
   "permissions": [
     "core:default",
     "opener:default",
@@ -32,6 +34,14 @@
           "args": true
         }
       ]
-    }
+    },
+    "fs:default",
+    "sql:default",
+    "dialog:allow-open",
+    "dialog:allow-save",
+    "dialog:default",
+    "clipboard-manager:default",
+    "fs:default",
+    "clipboard-manager:default"
   ]
 }

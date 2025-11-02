@@ -44,7 +44,11 @@ export interface ContainerInspect {
     gateway: string;
     macAddress: string;
   }>;
-  ports: string[];
+  ports: Array<{
+    containerPort: string;
+    hostIp: string;
+    hostPort: string;
+  }>;
 }
 
 export interface ContainerState {
@@ -92,8 +96,20 @@ export interface ContainerState {
   topLoading: boolean;
   setTopLoading: (status: boolean) => void;
   fetchLogs: (containerId: string, tail?: number) => Promise<void>;
+  streamLogs: (containerId: string, follow?: boolean) => Promise<void>;
+  appendLogs: (log: string) => void;
   clearLogs: () => void;
   fetchStats: () => Promise<void>;
+  streamStats: () => Promise<void>;
+  appendStats: (stats: ContainerStats[]) => void;
   inspectContainer: (containerId: string) => Promise<void>;
   execCommand: (containerId: string, command: string) => Promise<void>;
+  createContainer: (
+    image: string,
+    name?: string,
+    ports?: string[],
+    env?: string[],
+    volumes?: string[],
+    command?: string
+  ) => Promise<string | null>;
 }

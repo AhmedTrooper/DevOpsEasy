@@ -1,10 +1,12 @@
 import { useContainerStore } from "@/store/ContainerStore";
+import { useImageStore } from "@/store/ImageStore";
 import { useSettingsStore } from "@/store/SettingsStore";
-import { Card, CardBody, CardFooter, CardHeader, Button, Input, Select, SelectItem, Modal, ModalContent, ModalHeader, ModalBody, ModalFooter } from "@heroui/react";
-import { List, Loader2, Play, Square, RotateCw, Trash2, RefreshCw, Search, X, FileText, Download, Copy, Info, Terminal, Pause, PlayCircle, Edit, Save, GitCommit, Activity } from "lucide-react";
+import { Card, CardBody, CardFooter, CardHeader, Button, Input, Select, SelectItem, Modal, ModalContent, ModalHeader, ModalBody, ModalFooter, Autocomplete, AutocompleteItem } from "@heroui/react";
+import { List, Loader2, Play, Square, RotateCw, Trash2, RefreshCw, Search, X, FileText, Download, Copy, Info, Terminal, Pause, PlayCircle, Edit, Save, GitCommit, Activity, PlusCircle } from "lucide-react";
 import { useEffect, useState, useMemo, useRef } from "react";
 import clsx from "clsx";
 import { addToast } from "@heroui/react";
+import { writeText } from "@tauri-apps/plugin-clipboard-manager";
 
 export default function Container() {
   const containers = useContainerStore((state) => state.containers);
@@ -25,16 +27,25 @@ export default function Container() {
   const topOutput = useContainerStore((state) => state.topOutput);
   const topLoading = useContainerStore((state) => state.topLoading);
   const fetchLogs = useContainerStore((state) => state.fetchLogs);
+  const streamLogs = useContainerStore((state) => state.streamLogs);
   const logs = useContainerStore((state) => state.logs);
   const logsLoading = useContainerStore((state) => state.logsLoading);
   const clearLogs = useContainerStore((state) => state.clearLogs);
+  const stats = useContainerStore((state) => state.stats);
+  const statsLoading = useContainerStore((state) => state.statsLoading);
+  const fetchStats = useContainerStore((state) => state.fetchStats);
+  const streamStats = useContainerStore((state) => state.streamStats);
   const inspectContainer = useContainerStore((state) => state.inspectContainer);
   const inspectData = useContainerStore((state) => state.inspectData);
   const inspectLoading = useContainerStore((state) => state.inspectLoading);
   const execCommand = useContainerStore((state) => state.execCommand);
   const terminalOutput = useContainerStore((state) => state.terminalOutput);
+  const createContainer = useContainerStore((state) => state.createContainer);
   const terminalLoading = useContainerStore((state) => state.terminalLoading);
   const clearTerminalOutput = useContainerStore((state) => state.clearTerminalOutput);
+
+  const images = useImageStore((state) => state.images);
+  const fetchImages = useImageStore((state) => state.fetchImages);
 
   const autoRefreshEnabled = useSettingsStore((state) => state.autoRefreshEnabled);
   const autoRefreshInterval = useSettingsStore((state) => state.autoRefreshInterval);
@@ -48,31 +59,70 @@ export default function Container() {
   const [commitModalOpen, setCommitModalOpen] = useState(false);
   const [exportModalOpen, setExportModalOpen] = useState(false);
   const [topModalOpen, setTopModalOpen] = useState(false);
+  const [createModalOpen, setCreateModalOpen] = useState(false);
+  const [commandModalOpen, setCommandModalOpen] = useState(false);
+  const [generatedCommand, setGeneratedCommand] = useState("");
+  const [deleteConfirmModalOpen, setDeleteConfirmModalOpen] = useState(false);
+  const [stopConfirmModalOpen, setStopConfirmModalOpen] = useState(false);
+  const [restartConfirmModalOpen, setRestartConfirmModalOpen] = useState(false);
   const [selectedContainer, setSelectedContainer] = useState<{ id: string; name: string } | null>(null);
   const [logLines, setLogLines] = useState(100);
+  const [followLogs, setFollowLogs] = useState(false);
+  const [showStats, setShowStats] = useState(false);
+  const [streamingStats, setStreamingStats] = useState(false);
   const [commandInput, setCommandInput] = useState("");
   const [newContainerName, setNewContainerName] = useState("");
   const [commitImageName, setCommitImageName] = useState("");
   const [commitMessage, setCommitMessage] = useState("");
   const [exportPath, setExportPath] = useState("");
+  const [createImage, setCreateImage] = useState("");
+  const [createName, setCreateName] = useState("");
+  const [createPorts, setCreatePorts] = useState("");
+  const [createEnv, setCreateEnv] = useState("");
+  const [createVolumes, setCreateVolumes] = useState("");
+  const [createCommand, setCreateCommand] = useState("");
   const logsEndRef = useRef<HTMLDivElement>(null);
   const terminalEndRef = useRef<HTMLDivElement>(null);
 
   const handleOpenLogs = async (containerId: string, containerName: string) => {
     setSelectedContainer({ id: containerId, name: containerName });
     setLogsModalOpen(true);
+    // Start with static logs by default
+    setFollowLogs(false);
     await fetchLogs(containerId, logLines);
   };
 
   const handleCloseLogs = () => {
     setLogsModalOpen(false);
     setSelectedContainer(null);
+    setFollowLogs(false);
     clearLogs();
   };
 
   const handleRefreshLogs = async () => {
     if (selectedContainer) {
-      await fetchLogs(selectedContainer.id, logLines);
+      if (followLogs) {
+        // Restart streaming
+        await streamLogs(selectedContainer.id, true);
+      } else {
+        // Fetch static logs
+        await fetchLogs(selectedContainer.id, logLines);
+      }
+    }
+  };
+
+  const handleToggleFollowLogs = async () => {
+    if (selectedContainer) {
+      const newFollowState = !followLogs;
+      setFollowLogs(newFollowState);
+      
+      if (newFollowState) {
+        // Switch to streaming mode
+        await streamLogs(selectedContainer.id, true);
+      } else {
+        // Switch to static mode
+        await fetchLogs(selectedContainer.id, logLines);
+      }
     }
   };
 
@@ -202,6 +252,112 @@ export default function Container() {
     setSelectedContainer(null);
   };
 
+  const handleToggleStats = async () => {
+    if (!showStats) {
+      // Show stats and start with static fetch
+      setShowStats(true);
+      setStreamingStats(false);
+      await fetchStats();
+    } else {
+      // Hide stats
+      setShowStats(false);
+      setStreamingStats(false);
+    }
+  };
+
+  const handleToggleStatsStreaming = async () => {
+    if (!streamingStats) {
+      // Start streaming
+      setStreamingStats(true);
+      await streamStats();
+    } else {
+      // Stop streaming and fetch static
+      setStreamingStats(false);
+      await fetchStats();
+    }
+  };
+
+  const handleCreateContainer = async () => {
+    if (!createImage.trim()) return;
+    
+    const ports = createPorts.trim() ? createPorts.split(',').map(p => p.trim()).filter(Boolean) : undefined;
+    const env = createEnv.trim() ? createEnv.split(',').map(e => e.trim()).filter(Boolean) : undefined;
+    const volumes = createVolumes.trim() ? createVolumes.split(',').map(v => v.trim()).filter(Boolean) : undefined;
+    const name = createName.trim() || undefined;
+    const command = createCommand.trim() || undefined;
+    
+    const dockerCommand = await createContainer(createImage, name, ports, env, volumes, command);
+    
+    if (dockerCommand) {
+      setGeneratedCommand(dockerCommand);
+      setCommandModalOpen(true);
+    }
+    
+    // Close create modal and reset
+    setCreateModalOpen(false);
+    setCreateImage("");
+    setCreateName("");
+    setCreatePorts("");
+    setCreateEnv("");
+    setCreateVolumes("");
+    setCreateCommand("");
+  };
+
+  const handleCopyCommand = async () => {
+    try {
+      await writeText(generatedCommand);
+      addToast({
+        title: "Copied to Clipboard",
+        description: "Docker command copied successfully",
+        color: "success",
+        timeout: 1000,
+      });
+    } catch (error) {
+      addToast({
+        title: "Copy Failed",
+        description: "Failed to copy command to clipboard",
+        color: "danger",
+        timeout: 1500,
+      });
+    }
+  };
+
+  const handleOpenDeleteConfirm = (containerId: string, containerName: string) => {
+    setSelectedContainer({ id: containerId, name: containerName });
+    setDeleteConfirmModalOpen(true);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!selectedContainer) return;
+    await deleteContainer(selectedContainer.id);
+    setDeleteConfirmModalOpen(false);
+    setSelectedContainer(null);
+  };
+
+  const handleOpenStopConfirm = (containerId: string, containerName: string) => {
+    setSelectedContainer({ id: containerId, name: containerName });
+    setStopConfirmModalOpen(true);
+  };
+
+  const handleConfirmStop = async () => {
+    if (!selectedContainer) return;
+    await stopContainer(selectedContainer.id);
+    setStopConfirmModalOpen(false);
+    setSelectedContainer(null);
+  };
+
+  const handleOpenRestartConfirm = (containerId: string, containerName: string) => {
+    setSelectedContainer({ id: containerId, name: containerName });
+    setRestartConfirmModalOpen(true);
+  };
+
+  const handleConfirmRestart = async () => {
+    if (!selectedContainer) return;
+    await restartContainer(selectedContainer.id);
+    setRestartConfirmModalOpen(false);
+    setSelectedContainer(null);
+  };
+
   useEffect(() => {
     fetchContainers();
   }, [fetchContainers]);
@@ -216,6 +372,13 @@ export default function Container() {
 
     return () => clearInterval(intervalId);
   }, [autoRefreshEnabled, autoRefreshInterval, fetchContainers]);
+
+  // Auto-scroll logs when in follow mode
+  useEffect(() => {
+    if (followLogs && logsModalOpen) {
+      logsEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    }
+  }, [logs, followLogs, logsModalOpen]);
 
   // Filter containers based on search query and status
   const filteredContainers = useMemo(() => {
@@ -277,15 +440,36 @@ export default function Container() {
           <List />
           <span className="text-blue-500">Docker</span> Containers
         </h1>
-        <Button
-          color="default"
-          variant="flat"
-          onPress={() => fetchContainers()}
-          isDisabled={loading || operationLoading}
-          startContent={<RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />}
-        >
-          Refresh
-        </Button>
+        <div className="flex gap-2">
+          <Button
+            color="primary"
+            variant="solid"
+            onPress={() => {
+              fetchImages();
+              setCreateModalOpen(true);
+            }}
+            startContent={<PlusCircle className="w-4 h-4" />}
+          >
+            Create Container
+          </Button>
+          <Button
+            color={showStats ? "success" : "default"}
+            variant={showStats ? "solid" : "flat"}
+            onPress={handleToggleStats}
+            startContent={<Activity className="w-4 h-4" />}
+          >
+            {showStats ? "Hide Stats" : "Show Stats"}
+          </Button>
+          <Button
+            color="default"
+            variant="flat"
+            onPress={() => fetchContainers()}
+            isDisabled={loading || operationLoading}
+            startContent={<RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />}
+          >
+            Refresh
+          </Button>
+        </div>
       </div>
 
       {/* Search and Filter Section */}
@@ -325,6 +509,80 @@ export default function Container() {
         <p className="text-sm text-gray-500 mb-4">
           Found {filteredContainers.length} of {containers.length} containers
         </p>
+      )}
+
+      {/* Real-time Stats Section */}
+      {showStats && (
+        <Card className="mb-6">
+          <CardHeader className="bg-gradient-to-r from-purple-500 to-pink-500 text-white">
+            <div className="flex items-center justify-between w-full">
+              <div className="flex items-center gap-2">
+                <Activity className="w-5 h-5" />
+                <span className="font-bold text-lg">Container Statistics</span>
+              </div>
+              <div className="flex gap-2">
+                <Button
+                  size="sm"
+                  color={streamingStats ? "success" : "default"}
+                  onPress={handleToggleStatsStreaming}
+                  startContent={streamingStats ? <Square className="w-4 h-4" /> : <Play className="w-4 h-4" />}
+                >
+                  {streamingStats ? "Stop Stream" : "Start Stream"}
+                </Button>
+                <Button
+                  size="sm"
+                  color="default"
+                  onPress={fetchStats}
+                  isDisabled={streamingStats}
+                  startContent={<RefreshCw className="w-4 h-4" />}
+                >
+                  Refresh
+                </Button>
+              </div>
+            </div>
+          </CardHeader>
+          <CardBody>
+            {statsLoading && stats.length === 0 ? (
+              <div className="flex items-center justify-center py-4">
+                <Loader2 className="animate-spin w-6 h-6 mr-2" />
+                <span>Loading stats...</span>
+              </div>
+            ) : stats.length === 0 ? (
+              <div className="text-center py-4 text-gray-500">
+                No running containers to show stats
+              </div>
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead className="bg-gray-100 dark:bg-gray-800">
+                    <tr>
+                      <th className="text-left p-2">Container</th>
+                      <th className="text-left p-2">CPU %</th>
+                      <th className="text-left p-2">Memory Usage</th>
+                      <th className="text-left p-2">Memory %</th>
+                      <th className="text-left p-2">Net I/O</th>
+                      <th className="text-left p-2">Block I/O</th>
+                      <th className="text-left p-2">PIDs</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {stats.map((stat) => (
+                      <tr key={stat.id} className="border-b dark:border-gray-700">
+                        <td className="p-2 font-mono text-xs">{stat.name}</td>
+                        <td className="p-2 font-bold text-blue-600 dark:text-blue-400">{stat.cpuPerc}</td>
+                        <td className="p-2 font-mono text-xs">{stat.memUsage}</td>
+                        <td className="p-2 font-bold text-purple-600 dark:text-purple-400">{stat.memPerc}</td>
+                        <td className="p-2 font-mono text-xs">{stat.netIO}</td>
+                        <td className="p-2 font-mono text-xs">{stat.blockIO}</td>
+                        <td className="p-2">{stat.pids}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </CardBody>
+        </Card>
       )}
 
       {/* Containers List */}
@@ -371,7 +629,7 @@ export default function Container() {
                 </Button>
                 <Button
                   color="warning"
-                  onPress={() => stopContainer(container.id!)}
+                  onPress={() => handleOpenStopConfirm(container.id!, container.name!)}
                   isDisabled={
                     operationLoading || container.state !== "running"
                   }
@@ -382,7 +640,7 @@ export default function Container() {
                 </Button>
                 <Button
                   color="primary"
-                  onPress={() => restartContainer(container.id!)}
+                  onPress={() => handleOpenRestartConfirm(container.id!, container.name!)}
                   isDisabled={operationLoading}
                   className="flex gap-2"
                 >
@@ -483,7 +741,7 @@ export default function Container() {
                 </Button>
                 <Button
                   color="danger"
-                  onPress={() => deleteContainer(container.id!)}
+                  onPress={() => handleOpenDeleteConfirm(container.id!, container.name!)}
                   isDisabled={operationLoading}
                   className="flex gap-2"
                 >
@@ -522,12 +780,13 @@ export default function Container() {
                     selectedKeys={[logLines.toString()]}
                     onChange={(e) => {
                       setLogLines(Number(e.target.value));
-                      if (selectedContainer) {
+                      if (selectedContainer && !followLogs) {
                         fetchLogs(selectedContainer.id, Number(e.target.value));
                       }
                     }}
                     className="w-32"
                     size="sm"
+                    isDisabled={followLogs}
                   >
                     <SelectItem key="50">50</SelectItem>
                     <SelectItem key="100">100</SelectItem>
@@ -535,6 +794,14 @@ export default function Container() {
                     <SelectItem key="500">500</SelectItem>
                     <SelectItem key="1000">1000</SelectItem>
                   </Select>
+                  <Button
+                    size="sm"
+                    color={followLogs ? "success" : "default"}
+                    onPress={handleToggleFollowLogs}
+                    startContent={followLogs ? <Square className="w-4 h-4" /> : <Play className="w-4 h-4" />}
+                  >
+                    {followLogs ? "Stop" : "Follow"}
+                  </Button>
                   <Button
                     size="sm"
                     color="primary"
@@ -689,16 +956,30 @@ export default function Container() {
                 {inspectData.ports && inspectData.ports.length > 0 && (
                   <Card>
                     <CardHeader className="bg-pink-100 dark:bg-pink-900 font-bold">
-                      Exposed Ports ({inspectData.ports.length})
+                      Port Mappings ({inspectData.ports.length})
                     </CardHeader>
-                    <CardBody>
-                      <div className="flex flex-wrap gap-2">
-                        {inspectData.ports.map((port, index) => (
-                          <span key={index} className="bg-gray-200 dark:bg-gray-700 px-3 py-1 rounded-full text-sm font-mono">
-                            {port}
-                          </span>
-                        ))}
-                      </div>
+                    <CardBody className="space-y-2">
+                      {inspectData.ports.map((port, index) => (
+                        <div key={index} className="p-3 bg-gray-50 dark:bg-gray-800 rounded text-sm flex items-center justify-between">
+                          <div className="flex items-center gap-2">
+                            <span className="font-mono font-bold text-blue-600 dark:text-blue-400">
+                              {port.containerPort}
+                            </span>
+                            <span className="text-gray-500">→</span>
+                            <span className="font-mono">
+                              {port.hostPort === "Not Published" ? (
+                                <span className="text-orange-500 italic">{port.hostPort}</span>
+                              ) : (
+                                <>
+                                  <span className="text-gray-600 dark:text-gray-400">{port.hostIp}</span>
+                                  <span className="text-gray-500">:</span>
+                                  <span className="font-bold text-green-600 dark:text-green-400">{port.hostPort}</span>
+                                </>
+                              )}
+                            </span>
+                          </div>
+                        </div>
+                      ))}
                     </CardBody>
                   </Card>
                 )}
@@ -733,8 +1014,9 @@ export default function Container() {
           </ModalHeader>
           <ModalBody className="p-0">
             <div className="bg-black text-green-400 p-4 font-mono text-sm min-h-[400px] max-h-[500px] overflow-y-auto">
-              <div className="mb-2 text-gray-500">
-                # Container Terminal - Execute commands in the container
+              <div className="mb-2 text-yellow-500 text-xs">
+                ⚠️ Note: Each command runs in a new shell session. Directory changes (cd) don't persist.
+                <br />💡 Tip: Use combined commands like: <span className="text-blue-400">cd /app && ls -la</span>
               </div>
               <pre className="whitespace-pre-wrap break-words">
                 {terminalOutput || "Ready to execute commands..."}
@@ -744,7 +1026,7 @@ export default function Container() {
             <div className="p-4 bg-gray-900 border-t border-gray-700">
               <div className="flex gap-2">
                 <Input
-                  placeholder="Enter command (e.g., ls -la, cat /etc/hosts, ps aux)"
+                  placeholder="Enter command (e.g., ls -la, pwd, cd /app && ls)"
                   value={commandInput}
                   onChange={(e) => setCommandInput(e.target.value)}
                   onKeyDown={(e) => e.key === "Enter" && handleExecuteCommand()}
@@ -766,7 +1048,7 @@ export default function Container() {
                 </Button>
               </div>
               <div className="text-xs text-gray-500 mt-2">
-                Press Enter or click Execute to run the command
+                Press Enter or click Execute. Use && to chain commands (e.g., cd /home && ls)
               </div>
             </div>
           </ModalBody>
@@ -923,6 +1205,222 @@ export default function Container() {
           </ModalBody>
           <ModalFooter>
             <Button color="default" onPress={handleCloseTop}>
+              Close
+            </Button>
+          </ModalFooter>
+        </ModalContent>
+      </Modal>
+
+      {/* Create Container Modal */}
+      <Modal
+        isOpen={createModalOpen}
+        onClose={() => setCreateModalOpen(false)}
+        size="2xl"
+        scrollBehavior="inside"
+      >
+        <ModalContent>
+          <ModalHeader>Create New Container</ModalHeader>
+          <ModalBody>
+            <div className="space-y-4">
+              <div className="p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+                <p className="text-sm text-blue-600 dark:text-blue-400">
+                  💡 <strong>Tip:</strong> For containers that keep running, use commands like:
+                </p>
+                <ul className="text-xs mt-2 ml-4 list-disc text-blue-600 dark:text-blue-400">
+                  <li>Alpine/Ubuntu: <code className="bg-blue-100 dark:bg-blue-900 px-1 rounded">sleep infinity</code></li>
+                  <li>Bash shell: <code className="bg-blue-100 dark:bg-blue-900 px-1 rounded">/bin/bash -c "while true; do sleep 1000; done"</code></li>
+                  <li>Interactive: <code className="bg-blue-100 dark:bg-blue-900 px-1 rounded">/bin/sh</code> (but won't stay running in detached mode)</li>
+                </ul>
+                <p className="text-xs mt-2 text-blue-600 dark:text-blue-400">
+                  Without a long-running command, containers exit immediately after the command completes.
+                </p>
+              </div>
+              <Autocomplete
+                label="Image Name (required)"
+                placeholder="Select an image or type custom (e.g., nginx:latest)"
+                value={createImage}
+                onInputChange={(value) => setCreateImage(value)}
+                onSelectionChange={(key) => setCreateImage(key as string)}
+                description="Select from local images or type a custom image name"
+                isRequired
+                allowsCustomValue
+              >
+                {images.map((image) => {
+                  const imageName = `${image.repository}:${image.tag}`;
+                  return (
+                    <AutocompleteItem key={imageName}>
+                      {imageName}
+                    </AutocompleteItem>
+                  );
+                })}
+              </Autocomplete>
+              <Input
+                label="Container Name (optional)"
+                placeholder="e.g., my-nginx"
+                value={createName}
+                onChange={(e) => setCreateName(e.target.value)}
+                description="Custom name for the container"
+              />
+              <Input
+                label="Port Mappings (optional)"
+                placeholder="e.g., 8080:80, 3000:3000"
+                value={createPorts}
+                onChange={(e) => setCreatePorts(e.target.value)}
+                description="Comma-separated port mappings (host:container)"
+              />
+              <Input
+                label="Environment Variables (optional)"
+                placeholder="e.g., NODE_ENV=production, API_KEY=abc123"
+                value={createEnv}
+                onChange={(e) => setCreateEnv(e.target.value)}
+                description="Comma-separated environment variables (KEY=value)"
+              />
+              <Input
+                label="Volume Mounts (optional)"
+                placeholder="e.g., /host/path:/container/path, /data:/app/data"
+                value={createVolumes}
+                onChange={(e) => setCreateVolumes(e.target.value)}
+                description="Comma-separated volume mounts (host:container)"
+              />
+              <Input
+                label="Command (IMPORTANT - keeps container running)"
+                placeholder="sleep infinity"
+                value={createCommand}
+                onChange={(e) => setCreateCommand(e.target.value)}
+                description="⚠️ Required for most images to prevent immediate exit. Use 'sleep infinity' for Alpine/Ubuntu."
+                classNames={{
+                  label: "font-semibold text-warning",
+                }}
+              />
+            </div>
+          </ModalBody>
+          <ModalFooter>
+            <Button
+              color="primary"
+              onPress={handleCreateContainer}
+              isDisabled={!createImage.trim()}
+            >
+              Create Container
+            </Button>
+            <Button color="default" onPress={() => setCreateModalOpen(false)}>
+              Cancel
+            </Button>
+          </ModalFooter>
+        </ModalContent>
+      </Modal>
+
+      {/* Delete Confirmation Modal */}
+      <Modal
+        isOpen={deleteConfirmModalOpen}
+        onClose={() => setDeleteConfirmModalOpen(false)}
+        placement="center"
+        size="md"
+      >
+        <ModalContent>
+          <ModalHeader className="text-danger">Confirm Delete Container</ModalHeader>
+          <ModalBody>
+            <p>Are you sure you want to delete container <strong>{selectedContainer?.name}</strong>?</p>
+            <p className="text-sm text-gray-500 mt-2">This action cannot be undone.</p>
+          </ModalBody>
+          <ModalFooter>
+            <Button
+              color="danger"
+              onPress={handleConfirmDelete}
+            >
+              Delete
+            </Button>
+            <Button color="default" onPress={() => setDeleteConfirmModalOpen(false)}>
+              Cancel
+            </Button>
+          </ModalFooter>
+        </ModalContent>
+      </Modal>
+
+      {/* Stop Confirmation Modal */}
+      <Modal
+        isOpen={stopConfirmModalOpen}
+        onClose={() => setStopConfirmModalOpen(false)}
+        placement="center"
+        size="md"
+      >
+        <ModalContent>
+          <ModalHeader className="text-warning">Confirm Stop Container</ModalHeader>
+          <ModalBody>
+            <p>Are you sure you want to stop container <strong>{selectedContainer?.name}</strong>?</p>
+          </ModalBody>
+          <ModalFooter>
+            <Button
+              color="warning"
+              onPress={handleConfirmStop}
+            >
+              Stop
+            </Button>
+            <Button color="default" onPress={() => setStopConfirmModalOpen(false)}>
+              Cancel
+            </Button>
+          </ModalFooter>
+        </ModalContent>
+      </Modal>
+
+      {/* Restart Confirmation Modal */}
+      <Modal
+        isOpen={restartConfirmModalOpen}
+        onClose={() => setRestartConfirmModalOpen(false)}
+        placement="center"
+        size="md"
+      >
+        <ModalContent>
+          <ModalHeader className="text-primary">Confirm Restart Container</ModalHeader>
+          <ModalBody>
+            <p>Are you sure you want to restart container <strong>{selectedContainer?.name}</strong>?</p>
+          </ModalBody>
+          <ModalFooter>
+            <Button
+              color="primary"
+              onPress={handleConfirmRestart}
+            >
+              Restart
+            </Button>
+            <Button color="default" onPress={() => setRestartConfirmModalOpen(false)}>
+              Cancel
+            </Button>
+          </ModalFooter>
+        </ModalContent>
+      </Modal>
+
+      {/* Generated Command Modal */}
+      <Modal
+        isOpen={commandModalOpen}
+        onClose={() => setCommandModalOpen(false)}
+        placement="center"
+        size="2xl"
+      >
+        <ModalContent>
+          <ModalHeader className="flex items-center gap-2">
+            <Terminal className="w-5 h-5" />
+            Docker Run Command
+          </ModalHeader>
+          <ModalBody>
+            <div className="space-y-4">
+              <p className="text-sm text-default-500">
+                Copy and paste this command in your terminal to create the container:
+              </p>
+              <div className="bg-default-100 p-4 rounded-lg relative">
+                <pre className="text-sm select-text overflow-x-auto" style={{ userSelect: "text" }}>
+                  {generatedCommand}
+                </pre>
+              </div>
+            </div>
+          </ModalBody>
+          <ModalFooter>
+            <Button
+              color="primary"
+              startContent={<Copy className="w-4 h-4" />}
+              onPress={handleCopyCommand}
+            >
+              Copy Command
+            </Button>
+            <Button color="default" onPress={() => setCommandModalOpen(false)}>
               Close
             </Button>
           </ModalFooter>

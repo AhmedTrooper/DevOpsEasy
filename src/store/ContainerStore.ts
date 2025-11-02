@@ -28,13 +28,17 @@ export const useContainerStore = create<ContainerState>((set, get) => ({
   setTerminalOutput: (output) => set({ terminalOutput: output }),
   terminalLoading: false,
   setTerminalLoading: (status) => set({ terminalLoading: status }),
-  appendTerminalOutput: (output) => set({ terminalOutput: get().terminalOutput + output }),
+  appendTerminalOutput: (output) =>
+    set({ terminalOutput: get().terminalOutput + output }),
   clearTerminalOutput: () => set({ terminalOutput: "" }),
   topOutput: "",
   setTopOutput: (output) => set({ topOutput: output }),
   topLoading: false,
   setTopLoading: (status) => set({ topLoading: status }),
+
   fetchContainers: async () => {
+    if (get().loading) return;
+
     set({ loading: true, error: null });
     try {
       const cmd = Command.create("docker", [
@@ -70,12 +74,6 @@ export const useContainerStore = create<ContainerState>((set, get) => ({
         });
 
       set({ containers, loading: false });
-      addToast({
-        title: "Success",
-        description: `Loaded ${containers.length} Docker containers`,
-        color: "success",
-        timeout: 2000,
-      });
     } catch (error) {
       const errorMessage =
         error instanceof Error ? error.message : "Unknown error occurred";
@@ -84,7 +82,7 @@ export const useContainerStore = create<ContainerState>((set, get) => ({
         title: "Error fetching containers",
         description: errorMessage,
         color: "danger",
-        timeout: 3000,
+        timeout: 1500,
       });
     }
   },
@@ -100,12 +98,14 @@ export const useContainerStore = create<ContainerState>((set, get) => ({
 
       addToast({
         title: "Container Started",
-        description: `Container ${containerId.substring(0, 12)} started successfully`,
+        description: `Container ${containerId.substring(
+          0,
+          12
+        )} started successfully`,
         color: "success",
-        timeout: 2000,
+        timeout: 1000,
       });
 
-      // Refresh container list
       await get().fetchContainers();
     } catch (error) {
       const errorMessage =
@@ -114,7 +114,7 @@ export const useContainerStore = create<ContainerState>((set, get) => ({
         title: "Error starting container",
         description: errorMessage,
         color: "danger",
-        timeout: 3000,
+        timeout: 1500,
       });
     } finally {
       set({ operationLoading: false });
@@ -132,12 +132,14 @@ export const useContainerStore = create<ContainerState>((set, get) => ({
 
       addToast({
         title: "Container Stopped",
-        description: `Container ${containerId.substring(0, 12)} stopped successfully`,
+        description: `Container ${containerId.substring(
+          0,
+          12
+        )} stopped successfully`,
         color: "success",
-        timeout: 2000,
+        timeout: 1000,
       });
 
-      // Refresh container list
       await get().fetchContainers();
     } catch (error) {
       const errorMessage =
@@ -146,7 +148,7 @@ export const useContainerStore = create<ContainerState>((set, get) => ({
         title: "Error stopping container",
         description: errorMessage,
         color: "danger",
-        timeout: 3000,
+        timeout: 1500,
       });
     } finally {
       set({ operationLoading: false });
@@ -164,12 +166,14 @@ export const useContainerStore = create<ContainerState>((set, get) => ({
 
       addToast({
         title: "Container Restarted",
-        description: `Container ${containerId.substring(0, 12)} restarted successfully`,
+        description: `Container ${containerId.substring(
+          0,
+          12
+        )} restarted successfully`,
         color: "success",
-        timeout: 2000,
+        timeout: 1000,
       });
 
-      // Refresh container list
       await get().fetchContainers();
     } catch (error) {
       const errorMessage =
@@ -178,7 +182,7 @@ export const useContainerStore = create<ContainerState>((set, get) => ({
         title: "Error restarting container",
         description: errorMessage,
         color: "danger",
-        timeout: 3000,
+        timeout: 1500,
       });
     } finally {
       set({ operationLoading: false });
@@ -196,12 +200,14 @@ export const useContainerStore = create<ContainerState>((set, get) => ({
 
       addToast({
         title: "Container Deleted",
-        description: `Container ${containerId.substring(0, 12)} deleted successfully`,
+        description: `Container ${containerId.substring(
+          0,
+          12
+        )} deleted successfully`,
         color: "success",
-        timeout: 2000,
+        timeout: 1000,
       });
 
-      // Refresh container list
       await get().fetchContainers();
     } catch (error) {
       const errorMessage =
@@ -210,7 +216,7 @@ export const useContainerStore = create<ContainerState>((set, get) => ({
         title: "Error deleting container",
         description: errorMessage,
         color: "danger",
-        timeout: 3000,
+        timeout: 1500,
       });
     } finally {
       set({ operationLoading: false });
@@ -229,12 +235,14 @@ export const useContainerStore = create<ContainerState>((set, get) => ({
 
       addToast({
         title: "Container Paused",
-        description: `Container ${containerId.substring(0, 12)} paused successfully`,
+        description: `Container ${containerId.substring(
+          0,
+          12
+        )} paused successfully`,
         color: "success",
-        timeout: 2000,
+        timeout: 1000,
       });
 
-      // Refresh container list
       await get().fetchContainers();
     } catch (error) {
       const errorMessage =
@@ -243,7 +251,7 @@ export const useContainerStore = create<ContainerState>((set, get) => ({
         title: "Error pausing container",
         description: errorMessage,
         color: "danger",
-        timeout: 3000,
+        timeout: 1500,
       });
     } finally {
       set({ operationLoading: false });
@@ -262,12 +270,14 @@ export const useContainerStore = create<ContainerState>((set, get) => ({
 
       addToast({
         title: "Container Unpaused",
-        description: `Container ${containerId.substring(0, 12)} unpaused successfully`,
+        description: `Container ${containerId.substring(
+          0,
+          12
+        )} unpaused successfully`,
         color: "success",
-        timeout: 2000,
+        timeout: 1000,
       });
 
-      // Refresh container list
       await get().fetchContainers();
     } catch (error) {
       const errorMessage =
@@ -276,7 +286,7 @@ export const useContainerStore = create<ContainerState>((set, get) => ({
         title: "Error unpausing container",
         description: errorMessage,
         color: "danger",
-        timeout: 3000,
+        timeout: 1500,
       });
     } finally {
       set({ operationLoading: false });
@@ -297,10 +307,9 @@ export const useContainerStore = create<ContainerState>((set, get) => ({
         title: "Container Renamed",
         description: `Container renamed to ${newName} successfully`,
         color: "success",
-        timeout: 2000,
+        timeout: 1000,
       });
 
-      // Refresh container list
       await get().fetchContainers();
     } catch (error) {
       const errorMessage =
@@ -309,7 +318,7 @@ export const useContainerStore = create<ContainerState>((set, get) => ({
         title: "Error renaming container",
         description: errorMessage,
         color: "danger",
-        timeout: 3000,
+        timeout: 1500,
       });
     } finally {
       set({ operationLoading: false });
@@ -319,7 +328,12 @@ export const useContainerStore = create<ContainerState>((set, get) => ({
   exportContainer: async (containerId: string, outputPath: string) => {
     set({ operationLoading: true });
     try {
-      const cmd = Command.create("docker", ["export", "-o", outputPath, containerId]);
+      const cmd = Command.create("docker", [
+        "export",
+        "-o",
+        outputPath,
+        containerId,
+      ]);
       const output = await cmd.execute();
 
       if (output.code !== 0) {
@@ -330,7 +344,7 @@ export const useContainerStore = create<ContainerState>((set, get) => ({
         title: "Container Exported",
         description: `Container exported to ${outputPath}`,
         color: "success",
-        timeout: 2000,
+        timeout: 1000,
       });
     } catch (error) {
       const errorMessage =
@@ -339,14 +353,18 @@ export const useContainerStore = create<ContainerState>((set, get) => ({
         title: "Error exporting container",
         description: errorMessage,
         color: "danger",
-        timeout: 3000,
+        timeout: 1500,
       });
     } finally {
       set({ operationLoading: false });
     }
   },
 
-  commitContainer: async (containerId: string, imageName: string, message?: string) => {
+  commitContainer: async (
+    containerId: string,
+    imageName: string,
+    message?: string
+  ) => {
     set({ operationLoading: true });
     try {
       const args = ["commit"];
@@ -366,7 +384,7 @@ export const useContainerStore = create<ContainerState>((set, get) => ({
         title: "Container Committed",
         description: `Created image ${imageName} from container`,
         color: "success",
-        timeout: 2000,
+        timeout: 1000,
       });
     } catch (error) {
       const errorMessage =
@@ -375,7 +393,7 @@ export const useContainerStore = create<ContainerState>((set, get) => ({
         title: "Error committing container",
         description: errorMessage,
         color: "danger",
-        timeout: 3000,
+        timeout: 1500,
       });
     } finally {
       set({ operationLoading: false });
@@ -392,7 +410,10 @@ export const useContainerStore = create<ContainerState>((set, get) => ({
         throw new Error(output.stderr || "Failed to get container processes");
       }
 
-      set({ topOutput: output.stdout || "No processes found", topLoading: false });
+      set({
+        topOutput: output.stdout || "No processes found",
+        topLoading: false,
+      });
     } catch (error) {
       const errorMessage =
         error instanceof Error ? error.message : "Unknown error occurred";
@@ -401,7 +422,7 @@ export const useContainerStore = create<ContainerState>((set, get) => ({
         title: "Error fetching processes",
         description: errorMessage,
         color: "danger",
-        timeout: 3000,
+        timeout: 1500,
       });
     }
   },
@@ -431,13 +452,75 @@ export const useContainerStore = create<ContainerState>((set, get) => ({
         title: "Error fetching logs",
         description: errorMessage,
         color: "danger",
-        timeout: 3000,
+        timeout: 1500,
       });
     }
   },
 
   clearLogs: () => {
     set({ logs: "" });
+  },
+
+  appendLogs: (log: string) => {
+    set({ logs: get().logs + log });
+  },
+
+  streamLogs: async (containerId: string, follow: boolean = true) => {
+    set({ logsLoading: true, logs: "" });
+    try {
+      const args = ["logs"];
+
+      if (follow) {
+        args.push("--follow");
+      }
+
+      args.push("--timestamps", "--tail", "100", containerId);
+
+      const cmd = Command.create("docker", args);
+
+      // Setup real-time output streaming
+      cmd.stdout.on("data", (line) => {
+        get().appendLogs(line + "\n");
+      });
+
+      cmd.stderr.on("data", (line) => {
+        get().appendLogs(line + "\n");
+      });
+
+      cmd.on("close", (data) => {
+        set({ logsLoading: false });
+        if (data.code !== 0) {
+          addToast({
+            title: "Logs stream ended",
+            description: `Process exited with code ${data.code}`,
+            color: "warning",
+            timeout: 1000,
+          });
+        }
+      });
+
+      cmd.on("error", (error) => {
+        set({ logsLoading: false });
+        addToast({
+          title: "Error streaming logs",
+          description: error,
+          color: "danger",
+          timeout: 1500,
+        });
+      });
+
+      await cmd.spawn();
+    } catch (error) {
+      const errorMessage =
+        error instanceof Error ? error.message : "Unknown error occurred";
+      set({ logs: `Error: ${errorMessage}`, logsLoading: false });
+      addToast({
+        title: "Error streaming logs",
+        description: errorMessage,
+        color: "danger",
+        timeout: 1500,
+      });
+    }
   },
 
   fetchStats: async () => {
@@ -460,7 +543,8 @@ export const useContainerStore = create<ContainerState>((set, get) => ({
       const stats = lines
         .filter((line) => line.trim() !== "")
         .map((line) => {
-          const [id, name, cpuPerc, memUsage, memPerc, netIO, blockIO, pids] = line.split("|");
+          const [id, name, cpuPerc, memUsage, memPerc, netIO, blockIO, pids] =
+            line.split("|");
 
           return {
             id: id || "",
@@ -483,10 +567,91 @@ export const useContainerStore = create<ContainerState>((set, get) => ({
         title: "Error fetching stats",
         description: errorMessage,
         color: "danger",
-        timeout: 3000,
+        timeout: 1500,
       });
     }
   },
+
+  streamStats: async () => {
+    set({ statsLoading: true, stats: [] });
+    try {
+      const cmd = Command.create("docker", [
+        "stats",
+        "--format",
+        "{{.ID}}|{{.Name}}|{{.CPUPerc}}|{{.MemUsage}}|{{.MemPerc}}|{{.NetIO}}|{{.BlockIO}}|{{.PIDs}}",
+      ]);
+
+      // Handle stdout data stream
+      cmd.stdout.on("data", (line) => {
+        const lines = line.trim().split("\n");
+        const newStats = lines
+          .filter((l: string) => l.trim() !== "")
+          .map((l: string) => {
+            const [id, name, cpuPerc, memUsage, memPerc, netIO, blockIO, pids] =
+              l.split("|");
+            return {
+              id: id || "",
+              name: name || "",
+              cpuPerc: cpuPerc || "0%",
+              memUsage: memUsage || "0B / 0B",
+              memPerc: memPerc || "0%",
+              netIO: netIO || "0B / 0B",
+              blockIO: blockIO || "0B / 0B",
+              pids: pids || "0",
+            };
+          });
+
+        if (newStats.length > 0) {
+          get().appendStats(newStats);
+        }
+      });
+
+      // Handle stderr
+      cmd.stderr.on("data", (line) => {
+        console.error("Stats stream error:", line);
+      });
+
+      // Handle close event
+      cmd.on("close", (data) => {
+        set({ statsLoading: false });
+        if (data.code !== 0) {
+          addToast({
+            title: "Stats stream ended",
+            description: `Process exited with code ${data.code}`,
+            color: "warning",
+            timeout: 1500,
+          });
+        }
+      });
+
+      // Handle error event
+      cmd.on("error", (error) => {
+        set({ statsLoading: false, stats: [] });
+        addToast({
+          title: "Stats stream error",
+          description: error,
+          color: "danger",
+          timeout: 1500,
+        });
+      });
+
+      // Spawn the command
+      await cmd.spawn();
+      set({ statsLoading: false });
+    } catch (error) {
+      const errorMessage =
+        error instanceof Error ? error.message : "Unknown error occurred";
+      set({ stats: [], statsLoading: false });
+      addToast({
+        title: "Error streaming stats",
+        description: errorMessage,
+        color: "danger",
+        timeout: 1500,
+      });
+    }
+  },
+
+  appendStats: (stats) => set({ stats }),
 
   inspectContainer: async (containerId: string) => {
     set({ inspectLoading: true, inspectData: null });
@@ -504,7 +669,7 @@ export const useContainerStore = create<ContainerState>((set, get) => ({
       }
 
       const data = jsonData[0];
-      
+
       // Parse mounts
       const mounts = (data.Mounts || []).map((mount: any) => ({
         type: mount.Type || "N/A",
@@ -514,15 +679,43 @@ export const useContainerStore = create<ContainerState>((set, get) => ({
       }));
 
       // Parse networks
-      const networks = Object.entries(data.NetworkSettings?.Networks || {}).map(([name, netData]: [string, any]) => ({
-        name,
-        ipAddress: netData.IPAddress || "N/A",
-        gateway: netData.Gateway || "N/A",
-        macAddress: netData.MacAddress || "N/A",
-      }));
+      const networks = Object.entries(data.NetworkSettings?.Networks || {}).map(
+        ([name, netData]: [string, any]) => ({
+          name,
+          ipAddress: netData.IPAddress || "N/A",
+          gateway: netData.Gateway || "N/A",
+          macAddress: netData.MacAddress || "N/A",
+        })
+      );
 
-      // Parse ports
-      const ports = Object.keys(data.NetworkSettings?.Ports || {});
+      // Parse ports with proper mapping
+      const ports: Array<{
+        containerPort: string;
+        hostIp: string;
+        hostPort: string;
+      }> = [];
+      const portsData = data.NetworkSettings?.Ports || {};
+
+      Object.entries(portsData).forEach(
+        ([containerPort, bindings]: [string, any]) => {
+          if (bindings && Array.isArray(bindings)) {
+            bindings.forEach((binding: any) => {
+              ports.push({
+                containerPort,
+                hostIp: binding.HostIp || "0.0.0.0",
+                hostPort: binding.HostPort || "N/A",
+              });
+            });
+          } else {
+            // Port exposed but not bound
+            ports.push({
+              containerPort,
+              hostIp: "N/A",
+              hostPort: "Not Published",
+            });
+          }
+        }
+      );
 
       const inspectData = {
         id: data.Id || "N/A",
@@ -551,7 +744,7 @@ export const useContainerStore = create<ContainerState>((set, get) => ({
         title: "Error inspecting container",
         description: errorMessage,
         color: "danger",
-        timeout: 3000,
+        timeout: 1500,
       });
     }
   },
@@ -561,45 +754,144 @@ export const useContainerStore = create<ContainerState>((set, get) => ({
     try {
       const cmd = Command.create("docker", [
         "exec",
+        "-i",
         containerId,
         "sh",
         "-c",
-        command
+        command,
       ]);
-      
+
       const output = await cmd.execute();
-      
+
       const timestamp = new Date().toLocaleTimeString();
       const commandLine = `\n[${timestamp}] $ ${command}\n`;
-      
+
       if (output.code !== 0) {
         const errorOutput = output.stderr || "Command failed";
-        set({ 
-          terminalOutput: get().terminalOutput + commandLine + errorOutput + "\n",
-          terminalLoading: false 
+        set({
+          terminalOutput:
+            get().terminalOutput + commandLine + errorOutput + "\n",
+          terminalLoading: false,
         });
       } else {
         const successOutput = output.stdout || "(no output)";
-        set({ 
-          terminalOutput: get().terminalOutput + commandLine + successOutput + "\n",
-          terminalLoading: false 
+        set({
+          terminalOutput:
+            get().terminalOutput + commandLine + successOutput + "\n",
+          terminalLoading: false,
         });
       }
     } catch (error) {
       const errorMessage =
         error instanceof Error ? error.message : "Unknown error occurred";
       const timestamp = new Date().toLocaleTimeString();
-      set({ 
-        terminalOutput: get().terminalOutput + `\n[${timestamp}] Error: ${errorMessage}\n`,
-        terminalLoading: false 
+      set({
+        terminalOutput:
+          get().terminalOutput + `\n[${timestamp}] Error: ${errorMessage}\n`,
+        terminalLoading: false,
       });
       addToast({
         title: "Error executing command",
         description: errorMessage,
         color: "danger",
-        timeout: 3000,
+        timeout: 1500,
       });
     }
   },
-}));
 
+  createContainer: async (
+    image: string,
+    name?: string,
+    ports?: string[],
+    env?: string[],
+    volumes?: string[],
+    command?: string
+  ) => {
+    set({ operationLoading: true });
+    try {
+      const args = ["run", "-d"];
+
+      if (name) {
+        args.push("--name", name);
+      }
+
+      if (ports && ports.length > 0) {
+        ports.forEach((port) => {
+          args.push("-p", port);
+        });
+      }
+
+      if (env && env.length > 0) {
+        env.forEach((envVar) => {
+          args.push("-e", envVar);
+        });
+      }
+
+      if (volumes && volumes.length > 0) {
+        volumes.forEach((volume) => {
+          args.push("-v", volume);
+        });
+      }
+
+      args.push(image);
+
+      if (command && command.trim()) {
+        const commandParts = command.trim().split(/\s+/);
+        args.push(...commandParts);
+      }
+
+      let dockerCmd = "docker run -d";
+      if (name) dockerCmd += ` --name ${name}`;
+      if (ports && ports.length > 0) {
+        ports.forEach((port) => {
+          dockerCmd += ` -p ${port}`;
+        });
+      }
+      if (env && env.length > 0) {
+        env.forEach((envVar) => {
+          dockerCmd += ` -e "${envVar}"`;
+        });
+      }
+      if (volumes && volumes.length > 0) {
+        volumes.forEach((volume) => {
+          dockerCmd += ` -v ${volume}`;
+        });
+      }
+      dockerCmd += ` ${image}`;
+      if (command && command.trim()) {
+        dockerCmd += ` ${command}`;
+      }
+
+      const cmd = Command.create("docker", args);
+      const output = await cmd.execute();
+
+      if (output.code !== 0) {
+        throw new Error(output.stderr || "Failed to create container");
+      }
+
+      addToast({
+        title: "Container Created",
+        description: `From ${image}`,
+        color: "success",
+        timeout: 1000,
+      });
+
+      await get().fetchContainers();
+
+      set({ operationLoading: false });
+
+      return dockerCmd;
+    } catch (error) {
+      const errorMessage =
+        error instanceof Error ? error.message : "Unknown error occurred";
+      addToast({
+        title: "Error creating container",
+        description: errorMessage,
+        color: "danger",
+        timeout: 1500,
+      });
+      set({ operationLoading: false });
+      return null;
+    }
+  },
+}));

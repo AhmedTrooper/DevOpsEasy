@@ -65,3 +65,8 @@ Thumbs.db
 
 # Rust analyzer
 .rust-analyzer.json
+
+# Development documentation and scripts
+IMPLEMENTATION_GUIDE.md
+NATIVE_DIALOG_IMPLEMENTATION.md
+*.sh
