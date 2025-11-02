@@ -8,6 +8,11 @@ import "@fontsource-variable/inter";
 import Settings from "./routes/Settings";
 import "./index.css";
 import Image from "./routes/Image";
+import Container from "./routes/Container";
+import Volume from "./routes/Volume";
+import Network from "./routes/Network";
+import Compose from "./routes/Compose";
+import Stats from "./routes/Stats";
 
 ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
   <React.StrictMode>
@@ -27,9 +32,29 @@ ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
               path="settings"
               element={<Settings />}
             />
-             <Route
+            <Route
               path="images"
               element={<Image />}
+            />
+            <Route
+              path="containers"
+              element={<Container />}
+            />
+            <Route
+              path="volumes"
+              element={<Volume />}
+            />
+            <Route
+              path="networks"
+              element={<Network />}
+            />
+            <Route
+              path="compose"
+              element={<Compose />}
+            />
+            <Route
+              path="stats"
+              element={<Stats />}
             />
           </Route>
         </Routes>

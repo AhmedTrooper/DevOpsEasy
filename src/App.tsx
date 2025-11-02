@@ -5,6 +5,7 @@ import useThemeStore from "./store/themeStore";
 import useOsInfoStore from "./store/osInfoStore";
 import { useContextMenuStore } from "./store/ContextMenuStore";
 import { useApplicationStore } from "./store/ApplicationStore";
+import { useSettingsStore } from "./store/SettingsStore";
 import MenuBar from "./components/menuBar/MenuBar";
 import ContextMenuComponent from "./components/contextMenu/ContextMenuComponent";
 import clsx from "clsx";
@@ -16,6 +17,7 @@ function App() {
   const detectOS = useOsInfoStore((state) => state.detectMobileOS);
   const isMobileOS = useOsInfoStore((state) => state.isMobileOS);
   const osFetched = useOsInfoStore((state) => state.osFetched);
+  const loadSettings = useSettingsStore((state) => state.loadSettings);
   const contextMenuVisible = useContextMenuStore(
     (state) => state.contextMenuVisible
   );
@@ -34,6 +36,10 @@ function App() {
     const savedTheme = localStorage.getItem("theme");
     if (savedTheme === "dark") setDark(true);
   }, [setDark]);
+
+  useEffect(() => {
+    loadSettings();
+  }, [loadSettings]);
 
   useEffect(() => {
     if (!osFetched) {

@@ -27,7 +27,7 @@
       "identifier": "shell:allow-spawn",
       "allow": [
         {
-          "name": "Docker",
+          "name": "docker",
           "cmd": "docker",
           "args": true
         }

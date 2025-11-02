@@ -38,7 +38,7 @@ export const useApplicationStore = create<ApplicationState>((set, get) => ({
       let response = await fetch(applicationStore.metadataUrl);
       if (response.status === 200) {
         let data = (await response.json()) as MetadataState;
-        console.log(data)
+        console.log(data);
         applicationStore.setMetadataInformation(data);
         applicationStore.setOnlineApplicationVersion(
           data.onlineApplicationVersion
@@ -49,24 +49,29 @@ export const useApplicationStore = create<ApplicationState>((set, get) => ({
             title: "Application Update Available",
             description: `Online : ${onlineApplicationVersion}, Local: ${localApplicationVersion}`,
             color: "success",
-            timeout: 1000,
+            timeout: 3000,
           });
           applicationStore.setApplicationUpdateAvailable(true);
         }
       } else {
+        const errorMessage = `HTTP ${response.status}: ${response.statusText}`;
+        applicationStore.setApplicationUpdateCheckError(true);
         addToast({
-          title: "Update check error!",
+          title: "Update check failed",
+          description: errorMessage,
           color: "danger",
-          // description: error as string,
-          timeout: 1000,
+          timeout: 3000,
         });
       }
     } catch (error) {
+      const errorMessage =
+        error instanceof Error ? error.message : "Unknown error occurred";
+      applicationStore.setApplicationUpdateCheckError(true);
       addToast({
-        title: "Update check error!",
+        title: "Update check error",
+        description: errorMessage,
         color: "danger",
-        description: error as string,
-        timeout: 2000,
+        timeout: 3000,
       });
     }
   },
