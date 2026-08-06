@@ -3,6 +3,11 @@ import { listen } from "@tauri-apps/api/event";
 import { Table, proportional, pixel, TableColumn } from "@astryxdesign/core/Table";
 import { Card } from "@astryxdesign/core/Card";
 import { Badge } from "@astryxdesign/core/Badge";
+import { Toolbar } from "@astryxdesign/core/Toolbar";
+import { Button } from "@astryxdesign/core/Button";
+import { Icon } from "@astryxdesign/core/Icon";
+import { Heading } from "@astryxdesign/core/Text";
+import { RefreshCw } from "lucide-react";
 
 // Match the JSON structure from `docker ps --format '{{json .}}'`
 interface DockerContainer extends Record<string, unknown> {
@@ -78,6 +83,21 @@ export function ContainerTable() {
 
   return (
     <Card className="w-full">
+      <Toolbar
+        label="Container actions"
+        size="md"
+        dividers={["bottom"]}
+        startContent={<Heading level={3}>Live Containers</Heading>}
+        endContent={
+          <>
+            <Button
+              label="Refresh"
+              variant="secondary"
+              icon={<Icon icon={RefreshCw} />}
+            />
+          </>
+        }
+      />
       <Table 
         data={containers} 
         columns={columns} 
