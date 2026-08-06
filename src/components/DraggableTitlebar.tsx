@@ -9,13 +9,12 @@ import { useUIStore } from "../store/uiStore";
 
 const appWindow = getCurrentWindow();
 
-type DockPosition = "top" | "right" | "bottom";
+
 
 export default function DraggableTitlebar() {
-  const { toggleSidebar, isSidebarCollapsed } = useUIStore();
+  const { toggleSidebar, dockPos, cycleDockPos } = useUIStore();
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [isWidgetDraggable, setIsWidgetDraggable] = useState(true);
-  const [dockPos, setDockPos] = useState<DockPosition>("top");
 
   useEffect(() => {
     appWindow.isFullscreen().then(setIsFullscreen);
@@ -35,28 +34,16 @@ export default function DraggableTitlebar() {
     setIsFullscreen(!current);
   };
 
-  const cyclePosition = () => {
-    if (dockPos === "top") setDockPos("right");
-    else if (dockPos === "right") setDockPos("bottom");
-    else setDockPos("top");
-  };
-
   // Determine fixed positioning classes based on dockPos
   let posClasses = "";
   let isVertical = false;
   
-  // Astryx default side nav sizes: ~64px collapsed, ~260px expanded
-  const sidebarWidth = isSidebarCollapsed ? 64 : 260;
-  let dynamicStyle: React.CSSProperties = {};
-
   if (dockPos === "top") {
-    posClasses = "top-0 flex-row justify-between rounded-none border-x-0 border-t-0 border-b";
-    dynamicStyle = { left: sidebarWidth, width: `calc(100vw - ${sidebarWidth}px)` };
+    posClasses = "flex-row justify-between border-b";
   } else if (dockPos === "bottom") {
-    posClasses = "bottom-0 flex-row justify-between rounded-none border-x-0 border-b-0 border-t";
-    dynamicStyle = { left: sidebarWidth, width: `calc(100vw - ${sidebarWidth}px)` };
+    posClasses = "flex-row justify-between border-t";
   } else if (dockPos === "right") {
-    posClasses = "right-0 top-0 h-full flex-col justify-between rounded-none border-y-0 border-r-0 border-l";
+    posClasses = "h-full flex-col justify-between border-l";
     isVertical = true;
   }
 
@@ -67,15 +54,14 @@ export default function DraggableTitlebar() {
         transition={{ type: "spring", stiffness: 300, damping: 30 }}
         // When not "draggable" (meaning it's in OS drag mode), make the whole bar an OS drag region
         data-tauri-drag-region={!isWidgetDraggable ? "true" : undefined}
-        className={`fixed z-[9999] pointer-events-auto flex items-center bg-surface/80 text-primary backdrop-blur-md border-default shadow-md ${
+        className={`z-[99] shrink-0 pointer-events-auto flex items-center bg-surface/80 text-primary backdrop-blur-md border-default shadow-sm ${
           isVertical ? "py-4 px-2" : "px-4 py-2"
         } ${posClasses}`}
-        style={dynamicStyle}
       >
         {/* Left/Top Group */}
         <div className={`flex items-center gap-4 ${isVertical ? "flex-col" : "flex-row"}`} data-tauri-drag-region={undefined}>
           <div 
-            onClick={cyclePosition}
+            onClick={cycleDockPos}
             className="cursor-pointer text-secondary hover:text-primary transition-colors"
             title="Click to change dock position"
           >

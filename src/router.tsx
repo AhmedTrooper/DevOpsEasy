@@ -8,21 +8,37 @@ import WorkspacesPage from "./features/workspaces/WorkspacesPage";
 import DockerPage from "./features/docker/DockerPage";
 import ContainerPage from "./features/docker/containers/ContainerPage";
 import DraggableTitlebar from "./components/DraggableTitlebar";
+import { useUIStore } from "./store/uiStore";
+function AppLayout() {
+  const { dockPos } = useUIStore();
+  
+  return (
+    <div style={{ backgroundColor: 'var(--color-background-body)', color: 'var(--color-text-primary)', minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
+      <AppShell
+        contentPadding={0} // Remove padding here, add it to Outlet wrapper if needed
+        sideNav={<Sidebar />}
+        mobileNav={<MobileSidebar />}
+      >
+        <div className={`flex w-full h-full ${dockPos === 'top' || dockPos === 'bottom' ? 'flex-col' : 'flex-row'}`}>
+          {dockPos === 'top' && <DraggableTitlebar />}
+          
+          <div className="flex-1 overflow-auto p-4">
+            <Outlet />
+          </div>
+
+          {dockPos === 'right' && <DraggableTitlebar />}
+          {dockPos === 'bottom' && <DraggableTitlebar />}
+        </div>
+      </AppShell>
+    </div>
+  );
+}
 
 // 1. Root Route with AppShell Layout & Responsive Sidebar
 const rootRoute = createRootRoute({
   component: () => (
     <ThemeProvider>
-      <div style={{ backgroundColor: 'var(--color-background-body)', color: 'var(--color-text-primary)', minHeight: '100vh' }}>
-        <AppShell
-          contentPadding={4}
-          sideNav={<Sidebar />}
-          mobileNav={<MobileSidebar />}
-        >
-          <DraggableTitlebar />
-          <Outlet />
-        </AppShell>
-      </div>
+      <AppLayout />
     </ThemeProvider>
   ),
 });
