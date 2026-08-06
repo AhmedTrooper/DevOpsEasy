@@ -1,11 +1,10 @@
-import React from "react";
 import { Heading, Text, VStack } from "@astryxdesign/core";
 
 export function HomePage() {
   return (
-    <VStack spacing={4} className="p-6">
+    <VStack className="gap-4 p-6">
       <Heading level={1}>Home Dashboard</Heading>
-      <Text size="md" color="secondary">
+      <Text type="body" color="secondary">
         Welcome to DevOpsEasy Control Center. Select options from the sidebar navigation.
       </Text>
     </VStack>

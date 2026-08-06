@@ -1,4 +1,3 @@
-import React from "react";
 import { Link, useLocation } from "@tanstack/react-router";
 import { SideNav, SideNavSection, SideNavItem, SideNavHeading, VStack } from "@astryxdesign/core";
 import { Home, Info, Boxes, Container, Sun, Moon } from "lucide-react";
@@ -19,7 +18,7 @@ export function Sidebar() {
         />
       }
     >
-      <VStack spacing={2} className="px-3 py-2">
+      <VStack className="gap-2 px-3 py-2">
         <SideNavSection title="MENU" className="m-2">
           <SideNavItem
             label="Home"

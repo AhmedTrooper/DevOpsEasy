@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { Heading, Text, VStack, Card, Button, TextArea, HStack, Badge } from "@astryxdesign/core";
 import { useAppTheme } from "../../context/ThemeContext";
 
@@ -23,59 +23,52 @@ export function AboutPage() {
   };
 
   return (
-    <VStack spacing={4} className="p-6">
+    <VStack className="gap-4 p-6">
       <Heading level={1}>About DevOpsEasy</Heading>
-      <Text size="md" color="secondary">
+      <Text type="body" color="secondary">
         DevOpsEasy is a streamlined platform for managing cloud infrastructure, deployments, and observability.
       </Text>
 
       <Card className="p-4 mt-4">
-        <VStack spacing={3}>
+        <VStack className="gap-3">
           <Heading level={3}>Theme Settings</Heading>
-          <HStack spacing={3} alignment="center">
-            <Text size="sm">Active Mode:</Text>
-            <Badge variant="info">{mode.toUpperCase()}</Badge>
-            <Button variant="secondary" size="sm" onClick={toggleMode}>
-              Toggle to {mode === "dark" ? "Light" : "Dark"} Mode
-            </Button>
+          <HStack className="gap-3 items-center">
+            <Text type="supporting">Active Mode:</Text>
+            <Badge variant="info" label={mode.toUpperCase()} />
+            <Button variant="secondary" size="sm" onClick={toggleMode} label={`Toggle to ${mode === "dark" ? "Light" : "Dark"} Mode`} />
           </HStack>
         </VStack>
       </Card>
 
       <Card className="p-4 mt-2">
-        <VStack spacing={3}>
+        <VStack className="gap-3">
           <Heading level={3}>Custom Theme JSON (localStorage)</Heading>
-          <Text size="xs" color="secondary">
+          <Text type="supporting" color="secondary">
             Paste a custom Astryx theme JSON object below to override token variables and component styles.
           </Text>
           <TextArea
+            label="JSON Input"
             value={jsonInput}
-            onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setJsonInput(e.target.value)}
+            onChange={(val) => setJsonInput(val)}
             placeholder='{\n  "name": "my-theme",\n  "tokens": {\n    "--color-accent": ["#0077B6", "#48CAE4"]\n  }\n}'
             rows={8}
             className="font-mono text-xs w-full"
           />
           {statusMessage && (
-            <Badge variant={statusMessage.type === "success" ? "success" : "error"}>
-              {statusMessage.text}
-            </Badge>
+            <Badge variant={statusMessage.type === "success" ? "success" : "error"} label={statusMessage.text} />
           )}
-          <HStack spacing={2}>
-            <Button variant="primary" size="sm" onClick={handleApply}>
-              Save & Apply Custom Theme
-            </Button>
-            <Button variant="ghost" size="sm" onClick={handleReset}>
-              Reset Theme
-            </Button>
+          <HStack className="gap-2">
+            <Button variant="primary" size="sm" onClick={handleApply} label="Save & Apply Custom Theme" />
+            <Button variant="ghost" size="sm" onClick={handleReset} label="Reset Theme" />
           </HStack>
         </VStack>
       </Card>
 
       <Card className="p-4 mt-2">
-        <VStack spacing={2}>
+        <VStack className="gap-2">
           <Heading level={3}>Version & Info</Heading>
-          <Text size="sm">System Version: 1.0.0</Text>
-          <Text size="sm">Environment: Production</Text>
+          <Text type="supporting">System Version: 1.0.0</Text>
+          <Text type="supporting">Environment: Production</Text>
         </VStack>
       </Card>
     </VStack>
