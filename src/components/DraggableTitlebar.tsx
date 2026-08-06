@@ -46,11 +46,11 @@ export default function DraggableTitlebar() {
   let isVertical = false;
 
   if (dockPos === "top") {
-    posClasses = "top-4 left-1/2 -translate-x-1/2 flex-row";
+    posClasses = "top-0 left-0 w-full flex-row justify-between rounded-none border-x-0 border-t-0 border-b";
   } else if (dockPos === "bottom") {
-    posClasses = "bottom-4 left-1/2 -translate-x-1/2 flex-row";
+    posClasses = "bottom-0 left-0 w-full flex-row justify-between rounded-none border-x-0 border-b-0 border-t";
   } else if (dockPos === "right") {
-    posClasses = "right-4 top-1/2 -translate-y-1/2 flex-col";
+    posClasses = "right-0 top-0 h-full flex-col justify-between rounded-none border-y-0 border-r-0 border-l";
     isVertical = true;
   }
 
@@ -61,50 +61,52 @@ export default function DraggableTitlebar() {
         transition={{ type: "spring", stiffness: 300, damping: 30 }}
         // When not "draggable" (meaning it's in OS drag mode), make the whole bar an OS drag region
         data-tauri-drag-region={!isWidgetDraggable ? "true" : undefined}
-        className={`fixed z-[9999] pointer-events-auto flex items-center gap-4 bg-gray-900/80 backdrop-blur-md border border-gray-700 shadow-2xl rounded-full ${
-          isVertical ? "px-2 py-4" : "px-4 py-2"
+        className={`fixed z-[9999] pointer-events-auto flex items-center bg-gray-900/80 backdrop-blur-md border-gray-700 shadow-2xl ${
+          isVertical ? "py-4 px-2" : "px-4 py-2"
         } ${posClasses}`}
         style={{ color: "white" }}
       >
-        <div 
-          onClick={cyclePosition}
-          className="cursor-pointer text-gray-400 hover:text-white transition-colors"
-          title="Click to change dock position"
-          data-tauri-drag-region={undefined}
-        >
-          {isVertical ? <GripHorizontal size={20} /> : <GripVertical size={20} />}
-        </div>
-        
-        {/* Mobile Nav Drawer Toggle (hidden on md+) */}
-        <div className="md:hidden z-10" data-tauri-drag-region={undefined}>
-          <MobileNavToggle />
+        {/* Left/Top Group */}
+        <div className={`flex items-center gap-4 ${isVertical ? "flex-col" : "flex-row"}`} data-tauri-drag-region={undefined}>
+          <div 
+            onClick={cyclePosition}
+            className="cursor-pointer text-gray-400 hover:text-white transition-colors"
+            title="Click to change dock position"
+          >
+            {isVertical ? <GripHorizontal size={20} /> : <GripVertical size={20} />}
+          </div>
+          
+          {/* Mobile Nav Drawer Toggle (hidden on md+) */}
+          <div className="md:hidden z-10">
+            <MobileNavToggle />
+          </div>
+
+          {/* Desktop Sidebar Toggle (hidden on mobile) */}
+          <div 
+            className="hidden md:flex items-center justify-center p-1 hover:bg-gray-700 rounded-md cursor-pointer transition-colors z-10"
+            onClick={toggleSidebar}
+            title="Toggle Sidebar"
+          >
+            <Menu size={18} />
+          </div>
+
+          <Heading 
+            level={5} 
+            style={{ 
+              margin: 0, 
+              fontWeight: 600, 
+              letterSpacing: '0.5px',
+              writingMode: isVertical ? 'vertical-rl' : 'horizontal-tb',
+              transform: isVertical ? 'rotate(180deg)' : 'none'
+            }} 
+            className="hidden sm:block select-none pointer-events-none"
+          >
+            DevOpsEasy
+          </Heading>
         </div>
 
-        {/* Desktop Sidebar Toggle (hidden on mobile) */}
-        <div 
-          className="hidden md:flex items-center justify-center p-1 hover:bg-gray-700 rounded-md cursor-pointer transition-colors z-10"
-          onClick={toggleSidebar}
-          title="Toggle Sidebar"
-          data-tauri-drag-region={undefined}
-        >
-          <Menu size={18} />
-        </div>
-
-        <Heading 
-          level={5} 
-          style={{ 
-            margin: 0, 
-            fontWeight: 600, 
-            letterSpacing: '0.5px',
-            writingMode: isVertical ? 'vertical-rl' : 'horizontal-tb',
-            transform: isVertical ? 'rotate(180deg)' : 'none'
-          }} 
-          className="hidden sm:block select-none pointer-events-none"
-        >
-          DevOpsEasy
-        </Heading>
-
-        <div className={`flex items-center gap-3 z-10 ${isVertical ? "flex-col" : "ml-2 mr-2"}`} data-tauri-drag-region={undefined}>
+        {/* Right/Bottom Group */}
+        <div className={`flex items-center gap-3 z-10 ${isVertical ? "flex-col" : "flex-row"}`} data-tauri-drag-region={undefined}>
           
           {/* Toggle between Widget Drag (true) and OS Window Drag (false) */}
           <div title={isWidgetDraggable ? "Floating UI Mode (Click Grip to move)" : "Pinned Mode (Drag moves OS window)"}>
