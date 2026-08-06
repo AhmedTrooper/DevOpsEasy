@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { motion } from "framer-motion";
 import { GripHorizontal, Menu, Maximize, Minimize } from "lucide-react";
 import { Heading } from "@astryxdesign/core";
@@ -11,29 +11,12 @@ const appWindow = getCurrentWindow();
 
 export default function DraggableTitlebar() {
   const { toggleSidebar } = useUIStore();
+  const constraintsRef = useRef<HTMLDivElement>(null);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [isWidgetDraggable, setIsWidgetDraggable] = useState(true);
 
-  const [constraints, setConstraints] = useState({ top: 10, left: 10, right: 1000, bottom: 800 });
-
   useEffect(() => {
     appWindow.isFullscreen().then(setIsFullscreen);
-  }, []);
-
-  // Update drag constraints so it never gets lost off-screen
-  useEffect(() => {
-    const updateConstraints = () => {
-      setConstraints({
-        top: 10,
-        left: 10,
-        // Approximate max right/bottom values for a 450x60 widget
-        right: window.innerWidth - 450,
-        bottom: window.innerHeight - 60,
-      });
-    };
-    updateConstraints();
-    window.addEventListener("resize", updateConstraints);
-    return () => window.removeEventListener("resize", updateConstraints);
   }, []);
 
   // Automatically pin the widget (unmovable in web app, moves OS window instead) after 60 seconds
@@ -51,15 +34,17 @@ export default function DraggableTitlebar() {
   };
 
   return (
-    <motion.div
-      drag={isWidgetDraggable}
-      dragConstraints={constraints}
-      dragMomentum={false}
-      initial={{ x: 24, y: 24 }}
-      whileDrag={isWidgetDraggable ? { scale: 1.05, cursor: "grabbing" } : undefined}
-      // When not dragging the widget, make the whole bar an OS drag region
-      data-tauri-drag-region={!isWidgetDraggable ? "true" : undefined}
-      className={`fixed z-[9999] flex items-center gap-4 bg-gray-900/80 backdrop-blur-md border border-gray-700 shadow-2xl rounded-full px-3 py-2 ${
+    <>
+      <div ref={constraintsRef} className="fixed inset-4 pointer-events-none z-[9998]" />
+      <motion.div
+        drag={isWidgetDraggable}
+        dragConstraints={constraintsRef}
+        dragMomentum={false}
+        initial={{ x: 24, y: 24 }}
+        whileDrag={isWidgetDraggable ? { scale: 1.05, cursor: "grabbing" } : undefined}
+        // When not dragging the widget, make the whole bar an OS drag region
+        data-tauri-drag-region={!isWidgetDraggable ? "true" : undefined}
+        className={`fixed z-[9999] pointer-events-auto flex items-center gap-4 bg-gray-900/80 backdrop-blur-md border border-gray-700 shadow-2xl rounded-full px-3 py-2 ${
         isWidgetDraggable ? "cursor-grab" : "cursor-default"
       }`}
       style={{ color: "white" }}
@@ -134,5 +119,6 @@ export default function DraggableTitlebar() {
         />
       </div>
     </motion.div>
+    </>
   );
 }
