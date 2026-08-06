@@ -28,12 +28,10 @@ export function ContainerTable() {
 
     async function setupListener() {
       // Listen to the event emitted by Rust
-      unlisten = await listen<{ containers: Record<string, DockerContainer> }>(
+      unlisten = await listen<{ containers: DockerContainer[] }>(
         "docker-containers-updated",
         (event) => {
-          // Convert the HashMap from Rust back into an array
-          const updatedContainers = Object.values(event.payload.containers);
-          setContainers(updatedContainers);
+          setContainers(event.payload.containers);
           setIsLoading(false);
         }
       );

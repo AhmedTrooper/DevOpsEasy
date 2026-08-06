@@ -14,7 +14,7 @@ pub struct DockerState {
 
 #[derive(Clone, Serialize)]
 pub struct DockerUpdateEvent {
-    pub containers: HashMap<String, Value>,
+    pub containers: Vec<Value>,
 }
 
 pub fn init(app: &mut tauri::App) {
@@ -47,16 +47,32 @@ pub fn init(app: &mut tauri::App) {
                     }
                 }
 
-                if let Ok(mut map) = containers_clone.write() {
-                    *map = new_map.clone();
-                }
+                let is_different = if let Ok(mut map) = containers_clone.write() {
+                    if *map != new_map {
+                        *map = new_map.clone();
+                        true
+                    } else {
+                        false
+                    }
+                } else {
+                    false
+                };
 
-                let _ = handle.emit(
-                    "docker-containers-updated",
-                    DockerUpdateEvent {
-                        containers: new_map,
-                    },
-                );
+                if is_different {
+                    let mut sorted_containers: Vec<Value> = new_map.into_values().collect();
+                    sorted_containers.sort_by(|a, b| {
+                        let name_a = a.get("Names").and_then(|n| n.as_str()).unwrap_or("");
+                        let name_b = b.get("Names").and_then(|n| n.as_str()).unwrap_or("");
+                        name_a.cmp(name_b)
+                    });
+
+                    let _ = handle.emit(
+                        "docker-containers-updated",
+                        DockerUpdateEvent {
+                            containers: sorted_containers,
+                        },
+                    );
+                }
             }
         }
 
