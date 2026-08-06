@@ -20,7 +20,7 @@ const rootRoute = createRootRoute({
           sideNav={<Sidebar />}
           mobileNav={{
             breakpoint: "md",
-            hasToggle: true,
+            hasToggle: false,
           }}
         >
           <Outlet />

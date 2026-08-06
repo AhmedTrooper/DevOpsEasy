@@ -10,6 +10,7 @@ export function Sidebar() {
 
   return (
     <SideNav
+      collapsible={true}
       header={
         <SideNavHeading
           heading="DevOpsEasy"
