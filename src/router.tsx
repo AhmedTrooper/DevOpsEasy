@@ -17,7 +17,7 @@ function AppLayout() {
       <AppShell
         contentPadding={0} // Remove padding here, add it to Outlet wrapper if needed
         sideNav={<Sidebar />}
-        mobileNav={<MobileSidebar />}
+        mobileNav={{ hasToggle: false, content: <MobileSidebar /> }}
       >
         <div className={`flex w-full h-full ${dockPos === 'top' || dockPos === 'bottom' ? 'flex-col' : 'flex-row'}`}>
           {dockPos === 'top' && <DraggableTitlebar />}
