@@ -13,13 +13,13 @@ import DraggableTitlebar from "./components/DraggableTitlebar";
 const rootRoute = createRootRoute({
   component: () => (
     <ThemeProvider>
-      <DraggableTitlebar />
       <div style={{ backgroundColor: 'var(--color-background-body)', color: 'var(--color-text-primary)', minHeight: '100vh' }}>
         <AppShell
           contentPadding={4}
           sideNav={<Sidebar />}
           mobileNav={<MobileSidebar />}
         >
+          <DraggableTitlebar />
           <Outlet />
         </AppShell>
       </div>
