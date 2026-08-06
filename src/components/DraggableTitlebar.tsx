@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { GripHorizontal, Menu, Maximize, Minimize, GripVertical } from "lucide-react";
+import { GripHorizontal, Menu, Maximize, Minimize, GripVertical, X, Minus, Plus } from "lucide-react";
 import { Heading } from "@astryxdesign/core";
 import { Switch } from "@astryxdesign/core/Switch";
 import { MobileNavToggle } from "@astryxdesign/core/MobileNav";
@@ -132,19 +132,25 @@ export default function DraggableTitlebar() {
           {/* Window Controls */}
           <div 
             onClick={() => appWindow.close()} 
-            className="w-3 h-3 rounded-full bg-red-500 hover:bg-red-400 transition-colors cursor-pointer" 
+            className="w-4 h-4 flex items-center justify-center rounded-full bg-red-500 hover:bg-red-400 transition-colors cursor-pointer" 
             title="Close"
-          />
+          >
+            <X size={10} className="text-red-950 opacity-60 hover:opacity-100" />
+          </div>
           <div 
             onClick={() => appWindow.minimize()} 
-            className="w-3 h-3 rounded-full bg-yellow-500 hover:bg-yellow-400 transition-colors cursor-pointer" 
+            className="w-4 h-4 flex items-center justify-center rounded-full bg-yellow-500 hover:bg-yellow-400 transition-colors cursor-pointer" 
             title="Minimize"
-          />
+          >
+            <Minus size={10} className="text-yellow-950 opacity-60 hover:opacity-100" />
+          </div>
           <div 
             onClick={() => appWindow.toggleMaximize()} 
-            className="w-3 h-3 rounded-full bg-green-500 hover:bg-green-400 transition-colors cursor-pointer" 
+            className="w-4 h-4 flex items-center justify-center rounded-full bg-green-500 hover:bg-green-400 transition-colors cursor-pointer" 
             title="Maximize"
-          />
+          >
+            <Plus size={10} className="text-green-950 opacity-60 hover:opacity-100" />
+          </div>
         </div>
       </motion.div>
     </AnimatePresence>
