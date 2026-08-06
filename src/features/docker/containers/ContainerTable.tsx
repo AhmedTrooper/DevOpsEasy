@@ -21,6 +21,7 @@ interface DockerContainer extends Record<string, unknown> {
 
 export function ContainerTable() {
   const [containers, setContainers] = useState<DockerContainer[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     let unlisten: () => void;
@@ -33,6 +34,7 @@ export function ContainerTable() {
           // Convert the HashMap from Rust back into an array
           const updatedContainers = Object.values(event.payload.containers);
           setContainers(updatedContainers);
+          setIsLoading(false);
         }
       );
     }
@@ -98,12 +100,19 @@ export function ContainerTable() {
           </>
         }
       />
-      <Table 
-        data={containers} 
-        columns={columns} 
-        idKey="ID" 
-        hasHover 
-      />
+      {isLoading ? (
+        <div className="p-8 text-center text-gray-500">
+          Loading containers...
+        </div>
+      ) : (
+        <Table 
+          data={containers} 
+          columns={columns} 
+          idKey="ID" 
+          hasHover 
+          density="spacious"
+        />
+      )}
     </Card>
   );
 }

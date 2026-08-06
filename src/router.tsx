@@ -6,6 +6,7 @@ import HomePage from "./features/home/HomePage";
 import AboutPage from "./features/about/AboutPage";
 import WorkspacesPage from "./features/workspaces/WorkspacesPage";
 import DockerPage from "./features/docker/DockerPage";
+import ContainerPage from "./features/docker/containers/ContainerPage";
 
 // 1. Root Route with AppShell Layout & Responsive Sidebar
 const rootRoute = createRootRoute({
@@ -41,11 +42,18 @@ const workspacesRoute = createRoute({
   component: WorkspacesPage,
 });
 
-// 4. Docker Route
+// 4. Docker Route (Dashboard)
 const dockerRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: "/docker",
   component: DockerPage,
+});
+
+// 4.1 Docker Containers Route
+const dockerContainersRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "/docker/containers",
+  component: ContainerPage,
 });
 
 // 5. About Route
@@ -60,6 +68,7 @@ const routeTree = rootRoute.addChildren([
   indexRoute,
   workspacesRoute,
   dockerRoute,
+  dockerContainersRoute,
   aboutRoute,
 ]);
 

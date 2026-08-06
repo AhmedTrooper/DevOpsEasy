@@ -1,15 +1,38 @@
-import { Heading, Text, VStack } from "@astryxdesign/core";
-import { ContainerTable } from "./containers/ContainerTable";
+import { Heading, Text, VStack, Card } from "@astryxdesign/core";
+import { Link } from "@tanstack/react-router";
 
 export function DockerPage() {
   return (
     <VStack gap={4} className="p-6 w-full">
       <Heading level={1}>Docker Management</Heading>
       <Text type="body" color="secondary">
-        Monitor containers, images, volumes, and Docker networks.
+        Select a resource to manage.
       </Text>
       
-      <ContainerTable />
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4 w-full">
+        <Link to="/docker/containers">
+          <Card className="p-6 hover:shadow-lg transition-shadow cursor-pointer">
+            <VStack gap={2}>
+              <Heading level={3}>Containers</Heading>
+              <Text type="supporting" color="secondary">Monitor and manage running containers.</Text>
+            </VStack>
+          </Card>
+        </Link>
+
+        <Card className="p-6 opacity-50 cursor-not-allowed">
+          <VStack gap={2}>
+            <Heading level={3}>Images</Heading>
+            <Text type="supporting" color="secondary">Coming soon...</Text>
+          </VStack>
+        </Card>
+
+        <Card className="p-6 opacity-50 cursor-not-allowed">
+          <VStack gap={2}>
+            <Heading level={3}>Networks</Heading>
+            <Text type="supporting" color="secondary">Coming soon...</Text>
+          </VStack>
+        </Card>
+      </div>
     </VStack>
   );
 }
