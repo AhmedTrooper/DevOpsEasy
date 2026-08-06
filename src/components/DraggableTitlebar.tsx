@@ -11,7 +11,7 @@ const appWindow = getCurrentWindow();
 type DockPosition = "top" | "right" | "bottom";
 
 export default function DraggableTitlebar() {
-  const { toggleSidebar } = useUIStore();
+  const { toggleSidebar, isSidebarCollapsed } = useUIStore();
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [isWidgetDraggable, setIsWidgetDraggable] = useState(true);
   const [dockPos, setDockPos] = useState<DockPosition>("top");
@@ -43,11 +43,17 @@ export default function DraggableTitlebar() {
   // Determine fixed positioning classes based on dockPos
   let posClasses = "";
   let isVertical = false;
+  
+  // Astryx default side nav sizes: ~64px collapsed, ~260px expanded
+  const sidebarWidth = isSidebarCollapsed ? 64 : 260;
+  let dynamicStyle: React.CSSProperties = {};
 
   if (dockPos === "top") {
-    posClasses = "top-0 left-0 w-full flex-row justify-between rounded-none border-x-0 border-t-0 border-b";
+    posClasses = "top-0 flex-row justify-between rounded-none border-x-0 border-t-0 border-b";
+    dynamicStyle = { left: sidebarWidth, width: `calc(100vw - ${sidebarWidth}px)` };
   } else if (dockPos === "bottom") {
-    posClasses = "bottom-0 left-0 w-full flex-row justify-between rounded-none border-x-0 border-b-0 border-t";
+    posClasses = "bottom-0 flex-row justify-between rounded-none border-x-0 border-b-0 border-t";
+    dynamicStyle = { left: sidebarWidth, width: `calc(100vw - ${sidebarWidth}px)` };
   } else if (dockPos === "right") {
     posClasses = "right-0 top-0 h-full flex-col justify-between rounded-none border-y-0 border-r-0 border-l";
     isVertical = true;
@@ -63,6 +69,7 @@ export default function DraggableTitlebar() {
         className={`fixed z-[9999] pointer-events-auto flex items-center bg-surface/80 text-primary backdrop-blur-md border-default shadow-md ${
           isVertical ? "py-4 px-2" : "px-4 py-2"
         } ${posClasses}`}
+        style={dynamicStyle}
       >
         {/* Left/Top Group */}
         <div className={`flex items-center gap-4 ${isVertical ? "flex-col" : "flex-row"}`} data-tauri-drag-region={undefined}>
