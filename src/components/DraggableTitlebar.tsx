@@ -14,8 +14,26 @@ export default function DraggableTitlebar() {
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [isWidgetDraggable, setIsWidgetDraggable] = useState(true);
 
+  const [constraints, setConstraints] = useState({ top: 10, left: 10, right: 1000, bottom: 800 });
+
   useEffect(() => {
     appWindow.isFullscreen().then(setIsFullscreen);
+  }, []);
+
+  // Update drag constraints so it never gets lost off-screen
+  useEffect(() => {
+    const updateConstraints = () => {
+      setConstraints({
+        top: 10,
+        left: 10,
+        // Approximate max right/bottom values for a 450x60 widget
+        right: window.innerWidth - 450,
+        bottom: window.innerHeight - 60,
+      });
+    };
+    updateConstraints();
+    window.addEventListener("resize", updateConstraints);
+    return () => window.removeEventListener("resize", updateConstraints);
   }, []);
 
   // Automatically pin the widget (unmovable in web app, moves OS window instead) after 60 seconds
@@ -35,6 +53,7 @@ export default function DraggableTitlebar() {
   return (
     <motion.div
       drag={isWidgetDraggable}
+      dragConstraints={constraints}
       dragMomentum={false}
       initial={{ x: 24, y: 24 }}
       whileDrag={isWidgetDraggable ? { scale: 1.05, cursor: "grabbing" } : undefined}
