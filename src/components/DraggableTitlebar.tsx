@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { GripHorizontal, Menu, Maximize, Minimize, GripVertical, X, Minus, Plus } from "lucide-react";
+import { GripHorizontal, Menu, Maximize, Minimize, GripVertical, X, Minus } from "lucide-react";
 import { Heading } from "@astryxdesign/core";
 import { Switch } from "@astryxdesign/core/Switch";
 import { MobileNavToggle } from "@astryxdesign/core/MobileNav";
@@ -118,15 +118,6 @@ export default function DraggableTitlebar() {
             />
           </div>
 
-          {/* Fullscreen Button */}
-          <div 
-            onClick={handleFullscreen}
-            className="w-4 h-4 flex items-center justify-center rounded-sm hover:bg-gray-700 transition-colors cursor-pointer"
-            title="Toggle Fullscreen"
-          >
-            {isFullscreen ? <Minimize size={14} className="text-gray-300" /> : <Maximize size={14} className="text-gray-300" />}
-          </div>
-
           <div className={`${isVertical ? "h-px w-4" : "w-px h-4"} bg-gray-600 mx-1`} />
 
           {/* Window Controls */}
@@ -145,11 +136,11 @@ export default function DraggableTitlebar() {
             <Minus size={10} className="text-yellow-950 opacity-60 hover:opacity-100" />
           </div>
           <div 
-            onClick={() => appWindow.toggleMaximize()} 
+            onClick={handleFullscreen} 
             className="w-4 h-4 flex items-center justify-center rounded-full bg-green-500 hover:bg-green-400 transition-colors cursor-pointer" 
-            title="Maximize"
+            title="Toggle Fullscreen"
           >
-            <Plus size={10} className="text-green-950 opacity-60 hover:opacity-100" />
+            {isFullscreen ? <Minimize size={10} className="text-green-950 opacity-60 hover:opacity-100" /> : <Maximize size={10} className="text-green-950 opacity-60 hover:opacity-100" />}
           </div>
         </div>
       </motion.div>
