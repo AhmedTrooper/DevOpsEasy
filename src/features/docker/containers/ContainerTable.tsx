@@ -1,5 +1,6 @@
 import { useEffect, useState, useRef } from "react";
 import { listen } from "@tauri-apps/api/event";
+import { invoke } from "@tauri-apps/api/core";
 import { Table, TableHeader, TableHeaderCell, TableBody, TableRow, TableCell } from "@astryxdesign/core/Table";
 import { Card } from "@astryxdesign/core/Card";
 import { Badge } from "@astryxdesign/core/Badge";
@@ -37,6 +38,16 @@ export function ContainerTable() {
     let unlisten: () => void;
 
     async function setupListener() {
+      // 1. Fetch initial state
+      try {
+        const initialState = await invoke<{ docker: { containers: DockerContainer[] } }>("get_global_state");
+        setContainers(initialState.docker.containers);
+        setIsLoading(false);
+      } catch (e) {
+        console.error("Failed to fetch initial state", e);
+      }
+
+      // 2. Listen for updates
       unlisten = await listen<{ state: { docker: { containers: DockerContainer[] } } }>(
         "global-state-updated",
         (event) => {

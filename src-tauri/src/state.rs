@@ -29,6 +29,11 @@ pub struct GlobalStateUpdateEvent {
     pub state: GlobalStateData,
 }
 
+#[tauri::command]
+pub fn get_global_state(state: tauri::State<AppState>) -> GlobalStateData {
+    state.data.read().unwrap().clone()
+}
+
 pub fn init(app: &mut tauri::App) {
     let state = AppState::default();
     let state_clone = state.data.clone();
