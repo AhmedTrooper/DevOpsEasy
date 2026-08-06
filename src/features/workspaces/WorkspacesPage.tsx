@@ -1,15 +1,15 @@
 import React from "react";
 import { Heading, Text, VStack } from "@astryxdesign/core";
 
-export function HomePage() {
+export function WorkspacesPage() {
   return (
     <VStack spacing={4} className="p-6">
-      <Heading level={1}>Home Dashboard</Heading>
+      <Heading level={1}>Workspaces</Heading>
       <Text size="md" color="secondary">
-        Welcome to DevOpsEasy Control Center. Select options from the sidebar navigation.
+        Manage workspace environments, projects, and active developer setups.
       </Text>
     </VStack>
   );
 }
 
-export default HomePage;
+export default WorkspacesPage;
