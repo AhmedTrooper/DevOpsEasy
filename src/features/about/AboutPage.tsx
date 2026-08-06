@@ -24,9 +24,9 @@ export function AboutPage() {
 
   return (
     <VStack className="gap-4 p-6">
-      <Heading level={1}>About DevOpsEasy</Heading>
+      <Heading level={1}>About Portside</Heading>
       <Text type="body" color="secondary">
-        DevOpsEasy is a streamlined platform for managing cloud infrastructure, deployments, and observability.
+        Portside is a streamlined platform for managing cloud infrastructure, deployments, and observability.
       </Text>
 
       <Card className="p-4 mt-4">

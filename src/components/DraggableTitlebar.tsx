@@ -71,20 +71,20 @@ export default function DraggableTitlebar() {
           {/* Mobile Nav Drawer Toggle (visible on small screens) */}
           <div className="md:hidden z-10 flex items-center justify-center">
             <MobileNavToggle>
-              <div className="flex items-center justify-center p-1 hover:bg-surface-hover rounded-md cursor-pointer transition-colors">
+              <div className="flex items-center justify-center p-1 hover:bg-surface-hover rounded-md cursor-pointer transition-colors outline-none focus:outline-none">
                 <Menu size={18} />
               </div>
             </MobileNavToggle>
           </div>
 
           {/* Sidebar Toggle (visible on large screens) */}
-          <div 
-            className="hidden md:flex items-center justify-center p-1 hover:bg-surface-hover rounded-md cursor-pointer transition-colors z-10"
+          <button 
+            className="hidden md:flex items-center justify-center p-1 hover:bg-surface-hover rounded-md cursor-pointer transition-colors z-10 outline-none focus:outline-none border-none bg-transparent"
             onClick={toggleSidebar}
             title="Toggle Sidebar"
           >
             <Menu size={18} />
-          </div>
+          </button>
 
           <Heading 
             level={5} 
@@ -96,7 +96,7 @@ export default function DraggableTitlebar() {
             }} 
             className="hidden sm:block select-none pointer-events-none"
           >
-            DevOpsEasy
+            Portside
           </Heading>
         </div>
 

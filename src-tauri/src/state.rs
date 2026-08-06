@@ -1,6 +1,5 @@
 use serde::Serialize;
 use serde_json::Value;
-use std::collections::HashMap;
 use std::process::Command;
 use std::sync::{Arc, RwLock};
 use std::thread;
@@ -46,7 +45,10 @@ pub fn init(app: &mut tauri::App) {
         let mut new_state = GlobalStateData::default();
 
         // 1. Fetch Docker Containers
-        if let Ok(output) = Command::new("docker").args(["ps", "-a", "--format", "{{json .}}"]).output() {
+        if let Ok(output) = Command::new("docker")
+            .args(["ps", "-a", "--format", "{{json .}}"])
+            .output()
+        {
             if output.status.success() {
                 let stdout = String::from_utf8_lossy(&output.stdout);
                 let mut containers = Vec::new();
@@ -69,7 +71,10 @@ pub fn init(app: &mut tauri::App) {
         }
 
         // 2. Fetch Docker Images
-        if let Ok(output) = Command::new("docker").args(["images", "--format", "{{json .}}"]).output() {
+        if let Ok(output) = Command::new("docker")
+            .args(["images", "--format", "{{json .}}"])
+            .output()
+        {
             if output.status.success() {
                 let stdout = String::from_utf8_lossy(&output.stdout);
                 let mut images = Vec::new();
@@ -100,9 +105,7 @@ pub fn init(app: &mut tauri::App) {
         if is_different {
             let _ = handle.emit(
                 "global-state-updated",
-                GlobalStateUpdateEvent {
-                    state: new_state,
-                },
+                GlobalStateUpdateEvent { state: new_state },
             );
         }
 

@@ -22,7 +22,7 @@ function AppLayout() {
         <div className={`flex w-full h-full ${dockPos === 'top' || dockPos === 'bottom' ? 'flex-col' : 'flex-row'}`}>
           {dockPos === 'top' && <DraggableTitlebar />}
           
-          <div className="flex-1 overflow-auto p-4">
+          <div className="flex-1 min-h-0 overflow-auto p-4">
             <Outlet />
           </div>
 

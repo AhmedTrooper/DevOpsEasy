@@ -5,7 +5,7 @@ export function HomePage() {
     <VStack className="gap-4 p-6">
       <Heading level={1}>Home Dashboard</Heading>
       <Text type="body" color="secondary">
-        Welcome to DevOpsEasy Control Center. Select options from the sidebar navigation.
+        Welcome to Portside Control Center. Select options from the sidebar navigation.
       </Text>
     </VStack>
   );

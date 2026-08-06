@@ -69,7 +69,7 @@ export function Sidebar() {
       collapsible={{ isCollapsed: isSidebarCollapsed, onCollapsedChange: toggleSidebar }}
       header={
         <SideNavHeading
-          heading="DevOpsEasy"
+          heading="Portside"
           headingHref="/"
           className="px-4 py-3"
         />
@@ -82,7 +82,7 @@ export function Sidebar() {
 
 export function MobileSidebar() {
   return (
-    <MobileNav header={<div className="font-bold text-lg px-4 py-4">DevOpsEasy</div>}>
+    <MobileNav header={<div className="font-bold text-lg px-4 py-4">Portside</div>}>
       <NavItems />
     </MobileNav>
   );
