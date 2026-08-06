@@ -8,8 +8,9 @@ import { Toolbar } from "@astryxdesign/core/Toolbar";
 import { Button } from "@astryxdesign/core/Button";
 import { Icon } from "@astryxdesign/core/Icon";
 import { Heading } from "@astryxdesign/core/Text";
-import { RefreshCw } from "lucide-react";
+import { RefreshCw, Play, Square, RotateCw, Trash2, MoreVertical } from "lucide-react";
 import { useVirtualizer } from "@tanstack/react-virtual";
+import { DropdownMenu } from "@astryxdesign/core/DropdownMenu";
 
 // Match the JSON structure from `docker ps --format '{{json .}}'`
 interface DockerContainer extends Record<string, unknown> {
@@ -34,18 +35,24 @@ export function ContainerTable() {
     overscan: 5,
   });
 
+  const fetchState = async () => {
+    try {
+      setIsLoading(true);
+      const initialState = await invoke<{ docker: { containers: DockerContainer[] } }>("get_global_state");
+      setContainers(initialState.docker.containers);
+    } catch (e) {
+      console.error("Failed to fetch initial state", e);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   useEffect(() => {
     let unlisten: () => void;
 
     async function setupListener() {
       // 1. Fetch initial state
-      try {
-        const initialState = await invoke<{ docker: { containers: DockerContainer[] } }>("get_global_state");
-        setContainers(initialState.docker.containers);
-        setIsLoading(false);
-      } catch (e) {
-        console.error("Failed to fetch initial state", e);
-      }
+      await fetchState();
 
       // 2. Listen for updates
       unlisten = await listen<{ state: { docker: { containers: DockerContainer[] } } }>(
@@ -72,6 +79,26 @@ export function ContainerTable() {
     return "info";
   };
 
+  const handleAction = async (action: string, id: string) => {
+    try {
+      if (action === "start") {
+        await invoke("docker_start_container", { id });
+      } else if (action === "stop") {
+        await invoke("docker_stop_container", { id });
+      } else if (action === "restart") {
+        await invoke("docker_restart_container", { id });
+      } else if (action === "remove") {
+        await invoke("docker_remove_container", { id, force: true });
+      }
+      // Force refresh state after action
+      // In a real app we'd trigger a backend refresh, but for now we'll just wait for the loop or fetch manually.
+      // A proper solution would be sending a command to backend to force refresh.
+    } catch (e) {
+      console.error(`Failed to ${action} container ${id}:`, e);
+      // TODO: show toast error
+    }
+  };
+
   return (
     <Card className="w-full h-full flex flex-col">
       <Toolbar
@@ -85,11 +112,12 @@ export function ContainerTable() {
               label="Refresh"
               variant="secondary"
               icon={<Icon icon={RefreshCw} />}
+              onClick={fetchState}
             />
           </>
         }
       />
-      {isLoading ? (
+      {isLoading && containers.length === 0 ? (
         <div className="p-8 text-center text-gray-500">
           Loading containers...
         </div>
@@ -98,22 +126,24 @@ export function ContainerTable() {
           <Table density="spacious">
             <TableHeader>
               <TableRow>
-                <TableHeaderCell style={{ width: '25%' }}>Name</TableHeaderCell>
-                <TableHeaderCell style={{ width: '25%' }}>Image</TableHeaderCell>
+                <TableHeaderCell style={{ width: '20%' }}>Name</TableHeaderCell>
+                <TableHeaderCell style={{ width: '20%' }}>Image</TableHeaderCell>
                 <TableHeaderCell style={{ width: '100px' }}>State</TableHeaderCell>
-                <TableHeaderCell style={{ width: '25%' }}>Status</TableHeaderCell>
-                <TableHeaderCell style={{ width: '25%' }}>Ports</TableHeaderCell>
+                <TableHeaderCell style={{ width: '20%' }}>Status</TableHeaderCell>
+                <TableHeaderCell style={{ width: '20%' }}>Ports</TableHeaderCell>
+                <TableHeaderCell style={{ width: '80px', textAlign: 'right' }}>Actions</TableHeaderCell>
               </TableRow>
             </TableHeader>
             <TableBody>
               {rowVirtualizer.getVirtualItems().length > 0 && (
                 <TableRow>
-                  <TableCell colSpan={5} style={{ height: rowVirtualizer.getVirtualItems()[0].start, padding: 0 }} />
+                  <TableCell colSpan={6} style={{ height: rowVirtualizer.getVirtualItems()[0].start, padding: 0 }} />
                 </TableRow>
               )}
               
               {rowVirtualizer.getVirtualItems().map((virtualRow) => {
                 const container = containers[virtualRow.index];
+                const isRunning = container.State.toLowerCase() === "running";
                 return (
                   <TableRow key={container.ID} ref={rowVirtualizer.measureElement} data-index={virtualRow.index}>
                     <TableCell>{container.Names}</TableCell>
@@ -123,6 +153,42 @@ export function ContainerTable() {
                     </TableCell>
                     <TableCell>{container.Status}</TableCell>
                     <TableCell>{container.Ports}</TableCell>
+                    <TableCell style={{ textAlign: 'right' }}>
+                      <DropdownMenu
+                        button={{
+                          label: "Actions",
+                          icon: <Icon icon={MoreVertical} />,
+                          variant: "ghost",
+                        }}
+                        hasChevron={false}
+                        items={[
+                          {
+                            label: "Start",
+                            icon: <Icon icon={Play} />,
+                            isDisabled: isRunning,
+                            onClick: () => handleAction("start", container.ID)
+                          },
+                          {
+                            label: "Stop",
+                            icon: <Icon icon={Square} />,
+                            isDisabled: !isRunning,
+                            onClick: () => handleAction("stop", container.ID)
+                          },
+                          {
+                            label: "Restart",
+                            icon: <Icon icon={RotateCw} />,
+                            isDisabled: !isRunning,
+                            onClick: () => handleAction("restart", container.ID)
+                          },
+                          { type: "divider" },
+                          {
+                            label: "Remove",
+                            icon: <Icon icon={Trash2} className="text-red-500" />,
+                            onClick: () => handleAction("remove", container.ID)
+                          }
+                        ]}
+                      />
+                    </TableCell>
                   </TableRow>
                 );
               })}
@@ -130,7 +196,7 @@ export function ContainerTable() {
               {rowVirtualizer.getVirtualItems().length > 0 && (
                 <TableRow>
                   <TableCell 
-                    colSpan={5} 
+                    colSpan={6} 
                     style={{ 
                       height: rowVirtualizer.getTotalSize() - rowVirtualizer.getVirtualItems()[rowVirtualizer.getVirtualItems().length - 1].end, 
                       padding: 0 

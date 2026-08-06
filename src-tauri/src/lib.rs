@@ -1,4 +1,5 @@
 pub mod state;
+pub mod docker;
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
@@ -10,7 +11,13 @@ pub fn run() {
         .plugin(tauri_plugin_shell::init())
         .plugin(tauri_plugin_os::init())
         .plugin(tauri_plugin_opener::init())
-        .invoke_handler(tauri::generate_handler![state::get_global_state])
+        .invoke_handler(tauri::generate_handler![
+            state::get_global_state,
+            docker::docker_start_container,
+            docker::docker_stop_container,
+            docker::docker_restart_container,
+            docker::docker_remove_container,
+        ])
         .setup(|app| {
             state::init(app);
             Ok(())
