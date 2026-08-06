@@ -1,0 +1,112 @@
+# List
+
+A vertical collection of items with consistent spacing, dividers, and optional markers. Supports headers, icons, avatars, badges, and interactive items with click or link behavior. Use it to display ordered or unordered groups of related content.
+
+**Import:** `import {List} from '@astryxdesign/core/List';`
+
+## Anatomy
+
+| Element | Required | Description |
+|---------|----------|-------------|
+| List title | Yes | Heading that labels the list. |
+| Description | No | Supplementary text below the title. |
+| List items | Yes | Individual entries, which may include icons or images. |
+| Item description | No | Additional detail for an individual list item. |
+
+## Best Practices
+
+- **Do:** Provide a header to label the list and give context to screen readers.
+- **Do:** Use start and end content slots to add icons, avatars, or badges to each item.
+- **Don't:** Place interactive elements inside an interactive list item; it creates nested click targets and confusing focus behavior.
+- **Don't:** Use a list for a single item or for laying out unrelated content; lists imply a meaningful collection.
+- **Don't:** Mix clickable and non-clickable items in the same list without clear visual distinction.
+
+## Props
+
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `children` | `ReactNode` | — | List items (ListItem components). |
+| `density` | `'compact' \| 'balanced' \| 'spacious'` | `'balanced'` | Spacing density for items. |
+| `hasDividers` | `boolean` | `false` | Show dividers between items. |
+| `header` | `ReactNode` | — | Header content, associated with the list via aria-labelledby. |
+| `listStyle` | `'none' \| 'disc' \| 'decimal' \| 'circle'` | `'none'` | List marker style. 'decimal' renders an <ol> element instead of <ul>. |
+| `start` | `number` | `1` | Starting number for ordered lists (listStyle='decimal'). Sets the CSS counter to begin at this value. |
+| `xstyle` | `StyleXStyles` | — | StyleX styles for layout customization (margins, positioning, sizing). Must be a stylex.create() value: not an inline style object like style={{}}. |
+
+## Components
+
+### ListItem
+
+See `bunx astryx component ListItem` for props and usage.
+
+## Theming
+
+| Component class | Preferred data attributes | Props | States |
+|-----------------|---------------------------|-------|--------|
+| `astryx-list` | `data-density`, `data-list-style` | density, listStyle | — |
+| `astryx-list-item` | — | — | — |
+
+Override in defineTheme:
+```ts
+components: {
+  'list': {
+    base: { /* CSS properties */ },
+    'density:value': { /* variant-specific */ },
+  },
+  'list-item': {
+    base: { /* CSS properties */ },
+  },
+}
+```
+
+
+Related block templates
+
+dirName:     BannerCollapsibleContent
+description: Combine an action button, dismiss control, and expandable detail area in one banner. Use for complex notifications like config changes or deployment summaries.
+
+dirName:     ChatComposerDrawerFeedback
+description: Chat composer drawer with a feedback prompt and selectable lettered options. Use for user confirmation workflows that require explicit action before proceeding.
+
+dirName:     KbdMenuShortcuts
+description: Menu-style list pairing action labels with their keyboard shortcuts
+
+dirName:     LayoutDualPanelLayout
+description: A file browser style layout with start panel for folders, main content for files, and end panel for details.
+
+dirName: LayoutShowcase
+
+dirName:     LayoutSidebarLayout
+description: A settings page layout with a navigation sidebar panel, content area, header, and footer.
+
+dirName:     LayoutPanelNavigation
+description: A fixed-width side panel holding a navigation list next to the main content. Use LayoutPanel in the start or end slot of Layout for sidebars.
+
+dirName:     ListBasicList
+description: Simple list with labels and descriptions for settings-style layouts.
+
+dirName:     ListBulletedFeatures
+description: Bulleted list of feature highlights using disc markers.
+
+dirName:     ListMessageList
+description: Chat-style message list with avatars, preview text, and unread badges.
+
+dirName:     ListOrderedSteps
+description: Numbered step-by-step instructions using decimal list markers.
+
+dirName: ListShowcase
+
+dirName:     ListItemBasicItem
+description: Basic list items with labels and descriptions. Use this structure for settings, navigation summaries, and other simple collections.
+
+dirName:     ListItemShowcase
+description: List items with icons, descriptions, and end content slots demonstrating the full ListItem API.
+
+dirName:     ListItemWithMedia
+description: List items with leading avatars and icons. Use startContent for compact visual identifiers that help users scan the collection.
+
+dirName:     ListItemWithMetadata
+description: List items with end-aligned metadata. Use endContent for badges, counts, timestamps, and compact status details.
+
+dirName:     SideNavWithHeaderMenu
+description: Side navigation with an account switcher dropdown in the header for multi-account apps.
