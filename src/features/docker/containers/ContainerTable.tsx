@@ -27,11 +27,10 @@ export function ContainerTable() {
     let unlisten: () => void;
 
     async function setupListener() {
-      // Listen to the event emitted by Rust
-      unlisten = await listen<{ containers: DockerContainer[] }>(
-        "docker-containers-updated",
+      unlisten = await listen<{ state: { docker: { containers: DockerContainer[] } } }>(
+        "global-state-updated",
         (event) => {
-          setContainers(event.payload.containers);
+          setContainers(event.payload.state.docker.containers);
           setIsLoading(false);
         }
       );

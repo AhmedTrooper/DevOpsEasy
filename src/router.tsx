@@ -7,11 +7,13 @@ import AboutPage from "./features/about/AboutPage";
 import WorkspacesPage from "./features/workspaces/WorkspacesPage";
 import DockerPage from "./features/docker/DockerPage";
 import ContainerPage from "./features/docker/containers/ContainerPage";
+import DraggableTitlebar from "./components/DraggableTitlebar";
 
 // 1. Root Route with AppShell Layout & Responsive Sidebar
 const rootRoute = createRootRoute({
   component: () => (
     <ThemeProvider>
+      <DraggableTitlebar />
       <div style={{ backgroundColor: 'var(--color-background-body)', color: 'var(--color-text-primary)', minHeight: '100vh' }}>
         <AppShell
           contentPadding={4}
