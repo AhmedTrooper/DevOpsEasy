@@ -11,16 +11,18 @@ import DockerPage from "./features/docker/DockerPage";
 const rootRoute = createRootRoute({
   component: () => (
     <ThemeProvider>
-      <AppShell
-        contentPadding={4}
-        sideNav={<Sidebar />}
-        mobileNav={{
-          breakpoint: "md",
-          hasToggle: true,
-        }}
-      >
-        <Outlet />
-      </AppShell>
+      <div style={{ backgroundColor: 'var(--color-background-body)', color: 'var(--color-text-primary)', minHeight: '100vh' }}>
+        <AppShell
+          contentPadding={4}
+          sideNav={<Sidebar />}
+          mobileNav={{
+            breakpoint: "md",
+            hasToggle: true,
+          }}
+        >
+          <Outlet />
+        </AppShell>
+      </div>
     </ThemeProvider>
   ),
 });

@@ -20,7 +20,7 @@ export function Sidebar() {
       }
     >
       <VStack spacing={2} className="px-3 py-2">
-        <SideNavSection title="MENU">
+        <SideNavSection title="MENU" className="m-2">
           <SideNavItem
             label="Home"
             icon={<Home className="w-4 h-4 m-2" />}
@@ -55,7 +55,7 @@ export function Sidebar() {
           />
         </SideNavSection>
 
-        <SideNavSection title="THEME">
+        <SideNavSection title="THEME" className="m-2">
           <SideNavItem
             label={mode === "dark" ? "Light Mode" : "Dark Mode"}
             icon={mode === "dark" ? <Sun className="w-4 h-4 m-2" /> : <Moon className="w-4 h-4 m-2" />}
