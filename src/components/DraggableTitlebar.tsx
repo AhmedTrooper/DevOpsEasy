@@ -3,7 +3,6 @@ import { motion, AnimatePresence } from "framer-motion";
 import { GripHorizontal, Menu, Maximize, Minimize, GripVertical, X, Minus } from "lucide-react";
 import { Heading } from "@astryxdesign/core";
 import { Switch } from "@astryxdesign/core/Switch";
-import { MobileNavToggle } from "@astryxdesign/core/MobileNav";
 import { getCurrentWindow } from "@tauri-apps/api/window";
 import { useUIStore } from "../store/uiStore";
 
@@ -61,29 +60,23 @@ export default function DraggableTitlebar() {
         transition={{ type: "spring", stiffness: 300, damping: 30 }}
         // When not "draggable" (meaning it's in OS drag mode), make the whole bar an OS drag region
         data-tauri-drag-region={!isWidgetDraggable ? "true" : undefined}
-        className={`fixed z-[9999] pointer-events-auto flex items-center bg-gray-900/80 backdrop-blur-md border-gray-700 shadow-2xl ${
+        className={`fixed z-[9999] pointer-events-auto flex items-center bg-surface/80 text-primary backdrop-blur-md border-default shadow-md ${
           isVertical ? "py-4 px-2" : "px-4 py-2"
         } ${posClasses}`}
-        style={{ color: "white" }}
       >
         {/* Left/Top Group */}
         <div className={`flex items-center gap-4 ${isVertical ? "flex-col" : "flex-row"}`} data-tauri-drag-region={undefined}>
           <div 
             onClick={cyclePosition}
-            className="cursor-pointer text-gray-400 hover:text-white transition-colors"
+            className="cursor-pointer text-secondary hover:text-primary transition-colors"
             title="Click to change dock position"
           >
             {isVertical ? <GripHorizontal size={20} /> : <GripVertical size={20} />}
           </div>
           
-          {/* Mobile Nav Drawer Toggle (hidden on md+) */}
-          <div className="md:hidden z-10">
-            <MobileNavToggle />
-          </div>
-
-          {/* Desktop Sidebar Toggle (hidden on mobile) */}
+          {/* Sidebar Toggle (visible on all screens) */}
           <div 
-            className="hidden md:flex items-center justify-center p-1 hover:bg-gray-700 rounded-md cursor-pointer transition-colors z-10"
+            className="flex items-center justify-center p-1 hover:bg-surface-hover rounded-md cursor-pointer transition-colors z-10"
             onClick={toggleSidebar}
             title="Toggle Sidebar"
           >
