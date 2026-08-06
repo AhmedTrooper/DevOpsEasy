@@ -7,6 +7,10 @@ import { HeroUIProvider, ToastProvider } from "@heroui/react";
 import "@fontsource-variable/inter";
 import Settings from "./routes/Settings";
 import "./index.css";
+import "@astryxdesign/core/reset.css";
+import "@astryxdesign/core/astryx.css";
+import { Theme } from "@astryxdesign/core/theme";
+import { y2kTheme } from "./themes/y2k/y2kTheme";
 import Image from "./routes/Image";
 import Container from "./routes/Container";
 import Volume from "./routes/Volume";
@@ -24,8 +28,9 @@ import Stats from "./routes/Stats";
 ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
   <React.StrictMode>
     <HeroUIProvider>
-      <ToastProvider />
-      <BrowserRouter>
+      <Theme theme={y2kTheme}>
+        <ToastProvider />
+        <BrowserRouter>
         <Routes>
           <Route
             path="/"
@@ -69,7 +74,8 @@ ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
             />
           </Route>
         </Routes>
-      </BrowserRouter>
+        </BrowserRouter>
+      </Theme>
     </HeroUIProvider>
   </React.StrictMode>
 );

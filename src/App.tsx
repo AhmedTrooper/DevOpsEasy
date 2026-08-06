@@ -1,33 +1,18 @@
 import { useEffect } from "react";
 import "./App.css";
-import { Outlet } from "react-router-dom";
 import useThemeStore from "./store/themeStore";
 import useOsInfoStore from "./store/osInfoStore";
-import { useContextMenuStore } from "./store/ContextMenuStore";
 import { useApplicationStore } from "./store/ApplicationStore";
 import { useSettingsStore } from "./store/SettingsStore";
-import MenuBar from "./components/menuBar/MenuBar";
 import ContextMenuComponent from "./components/contextMenu/ContextMenuComponent";
-import clsx from "clsx";
-
+import ShellLayout from "./features/shell/ShellLayout";
 
 function App() {
   const dark = useThemeStore((state) => state.dark);
   const setDark = useThemeStore((state) => state.setDark);
   const detectOS = useOsInfoStore((state) => state.detectMobileOS);
-  const isMobileOS = useOsInfoStore((state) => state.isMobileOS);
   const osFetched = useOsInfoStore((state) => state.osFetched);
   const loadSettings = useSettingsStore((state) => state.loadSettings);
-  const contextMenuVisible = useContextMenuStore(
-    (state) => state.contextMenuVisible
-  );
-  const setContextMenuVisible = useContextMenuStore(
-    (state) => state.setContextMenuVisible
-  );
-  const menuBarVisible = useApplicationStore((state) => state.menuBarVisible);
-  const setMenuBarVisible = useApplicationStore(
-    (state) => state.setMenuBarVisible
-  );
   const checkApplicationUpdate = useApplicationStore(
     (state) => state.checkApplicationUpdate
   );
@@ -35,6 +20,7 @@ function App() {
   useEffect(() => {
     const savedTheme = localStorage.getItem("theme");
     if (savedTheme === "dark") setDark(true);
+    else setDark(true); // Default to dark for high-density IDE feel
   }, [setDark]);
 
   useEffect(() => {
@@ -61,28 +47,11 @@ function App() {
     checkApplicationUpdate();
   }, []);
 
-  useEffect(() => {
-    const handleContextMenu = (e: MouseEvent) => {
-      e.preventDefault();
-      setContextMenuVisible(!contextMenuVisible);
-      if (menuBarVisible) setMenuBarVisible(false);
-    };
-    window.addEventListener("contextmenu", handleContextMenu);
-    return () => window.removeEventListener("contextmenu", handleContextMenu);
-  }, [contextMenuVisible]);
-
   return (
-    <div
-      className={clsx(
-        "grid min-h-screen bg-white text-black dark:bg-zinc-900 dark:text-white transition-colors pt-10 max-h-[100vh] select-none",
-        {
-          "custom-scrollbar": !isMobileOS,
-        }
-      )}
-    >
-      {" "}
-      <MenuBar />
-      <Outlet />
+    <div className="h-screen w-screen bg-zinc-950 text-white overflow-hidden select-none font-sans flex flex-col">
+      <div className="flex-1 overflow-hidden">
+        <ShellLayout />
+      </div>
       <ContextMenuComponent />
     </div>
   );

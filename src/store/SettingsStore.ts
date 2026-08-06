@@ -1,7 +1,7 @@
 import { create } from "zustand";
 import { SettingsState } from "@/interface/store/SettingsStoreInterface";
 
-const SETTINGS_STORAGE_KEY = "devopseasy-settings";
+const SETTINGS_STORAGE_KEY = "portside-settings";
 
 const DEFAULT_SETTINGS = {
   autoRefreshEnabled: false,

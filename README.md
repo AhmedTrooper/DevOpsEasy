@@ -1,4 +1,4 @@
-# DevOpsEasy
+# Portside
 
 > A powerful desktop app for managing Docker containers, images, volumes, networks, and Compose projects.
 
@@ -9,45 +9,45 @@
 
 <p align="center">
   <img 
-  src="https://raw.githubusercontent.com/AhmedTrooper/DevOpsEasy/main/readme_assets/Screenshot%20from%202025-11-02%2013-44-19.png"
-       alt="DevOpsEasy Dashboard"
+  src="https://raw.githubusercontent.com/AhmedTrooper/Portside/main/readme_assets/Screenshot%20from%202025-11-02%2013-44-19.png"
+       alt="Portside Dashboard"
        width="800px" />
 </p>
 
 ## Screenshots
 
 <p align="center">
-  <img src="https://raw.githubusercontent.com/AhmedTrooper/DevOpsEasy/main/readme_assets/Screenshot%20from%202025-11-02%2013-44-27.png" alt="Container Management" width="800px" />
+  <img src="https://raw.githubusercontent.com/AhmedTrooper/Portside/main/readme_assets/Screenshot%20from%202025-11-02%2013-44-27.png" alt="Container Management" width="800px" />
   <br/>
   <em>Container Management</em>
 </p>
 
 <p align="center">
-  <img src="https://raw.githubusercontent.com/AhmedTrooper/DevOpsEasy/main/readme_assets/Screenshot%20from%202025-11-02%2018-40-17.png" alt="Image Management" width="800px" />
+  <img src="https://raw.githubusercontent.com/AhmedTrooper/Portside/main/readme_assets/Screenshot%20from%202025-11-02%2018-40-17.png" alt="Image Management" width="800px" />
   <br/>
   <em>Image Management</em>
 </p>
 
 <p align="center">
-  <img src="https://raw.githubusercontent.com/AhmedTrooper/DevOpsEasy/main/readme_assets/Screenshot%20from%202025-11-02%2018-40-26.png" alt="Volume Management" width="800px" />
+  <img src="https://raw.githubusercontent.com/AhmedTrooper/Portside/main/readme_assets/Screenshot%20from%202025-11-02%2018-40-26.png" alt="Volume Management" width="800px" />
   <br/>
   <em>Volume Management</em>
 </p>
 
 <p align="center">
-  <img src="https://raw.githubusercontent.com/AhmedTrooper/DevOpsEasy/main/readme_assets/Screenshot%20from%202025-11-02%2018-40-36.png" alt="Network Management" width="800px" />
+  <img src="https://raw.githubusercontent.com/AhmedTrooper/Portside/main/readme_assets/Screenshot%20from%202025-11-02%2018-40-36.png" alt="Network Management" width="800px" />
   <br/>
   <em>Network Management</em>
 </p>
 
 <p align="center">
-  <img src="https://raw.githubusercontent.com/AhmedTrooper/DevOpsEasy/main/readme_assets/Screenshot%20from%202025-11-02%2019-33-03.png" alt="Docker Compose" width="800px" />
+  <img src="https://raw.githubusercontent.com/AhmedTrooper/Portside/main/readme_assets/Screenshot%20from%202025-11-02%2019-33-03.png" alt="Docker Compose" width="800px" />
   <br/>
   <em>Docker Compose</em>
 </p>
 
 <p align="center">
-  <img src="https://raw.githubusercontent.com/AhmedTrooper/DevOpsEasy/main/readme_assets/Screenshot%20from%202025-11-02%2019-33-13.png" alt="System Information" width="800px" />
+  <img src="https://raw.githubusercontent.com/AhmedTrooper/Portside/main/readme_assets/Screenshot%20from%202025-11-02%2019-33-13.png" alt="System Information" width="800px" />
   <br/>
   <em>System Information</em>
 </p>
@@ -116,15 +116,15 @@
 
 ## Download
 
-**[→ Download from Releases](https://github.com/AhmedTrooper/DevOpsEasy/releases)**
+**[→ Download from Releases](https://github.com/AhmedTrooper/Portside/releases)**
 
 Choose the right package for your system:
 
-- **Windows**: `devopseasy_0.1.0_x64_en-US.msi`
-- **Linux (Universal)**: `devopseasy_0.1.0_amd64.AppImage`
-- **Linux (Debian/Ubuntu)**: `devopseasy_0.1.0_amd64.deb`
-- **Linux (Fedora/RHEL)**: `devopseasy-0.1.0-1.x86_64.rpm`
-- **macOS**: `devopseasy_0.1.0_x64.dmg`
+- **Windows**: `portside_0.1.0_x64_en-US.msi`
+- **Linux (Universal)**: `portside_0.1.0_amd64.AppImage`
+- **Linux (Debian/Ubuntu)**: `portside_0.1.0_amd64.deb`
+- **Linux (Fedora/RHEL)**: `portside-0.1.0-1.x86_64.rpm`
+- **macOS**: `portside_0.1.0_x64.dmg`
 
 ## Installation
 
@@ -132,25 +132,25 @@ Choose the right package for your system:
 
 **Linux (AppImage)**:
 ```bash
-chmod +x devopseasy_0.1.0_amd64.AppImage
-./devopseasy_0.1.0_amd64.AppImage
+chmod +x portside_0.1.0_amd64.AppImage
+./portside_0.1.0_amd64.AppImage
 ```
 
 **Linux (DEB)**:
 ```bash
-sudo dpkg -i devopseasy_0.1.0_amd64.deb
+sudo dpkg -i portside_0.1.0_amd64.deb
 ```
 
 **Linux (RPM)**:
 ```bash
-sudo rpm -i devopseasy-0.1.0-1.x86_64.rpm
+sudo rpm -i portside-0.1.0-1.x86_64.rpm
 ```
 
 **macOS**: Open the `.dmg` and drag to Applications.
 
 ## Usage
 
-Launch DevOpsEasy and it will connect to your local Docker daemon.
+Launch Portside and it will connect to your local Docker daemon.
 
 **Quick Tips:**
 - Navigate using the sidebar
@@ -186,8 +186,8 @@ sudo pacman -S webkit2gtk base-devel curl wget file openssl appmenu-gtk-module g
 ### Build Steps
 
 ```bash
-git clone https://github.com/AhmedTrooper/DevOpsEasy.git
-cd DevOpsEasy
+git clone https://github.com/AhmedTrooper/Portside.git
+cd Portside
 npm install
 npm run tauri dev      # Development
 npm run tauri build    # Production
@@ -210,7 +210,7 @@ Builds are located in `src-tauri/target/release/bundle/`.
 
 ### Architecture Overview
 
-DevOpsEasy uses Tauri to bridge React frontend with Rust backend. Docker commands are executed via Tauri's shell plugin, and results are parsed and displayed in the UI.
+Portside uses Tauri to bridge React frontend with Rust backend. Docker commands are executed via Tauri's shell plugin, and results are parsed and displayed in the UI.
 
 ### Docker Command Execution
 
@@ -621,7 +621,7 @@ const loadComposeFile = async (path: string) => {
 ## Project Structure
 
 ```
-DevOpsEasy/
+Portside/
 ├── src/                    # Frontend code
 │   ├── routes/            # Page components
 │   ├── store/             # State management

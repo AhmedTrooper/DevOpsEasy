@@ -4,7 +4,7 @@
   "features": ["Feature 1", "Feature 2"],
   "fixed_errors": ["Error 1"],
   "notes": "This release focuses on various new sections",
-  "release_url": "https://github.com/AhmedTrooper/DevOpsEasy/releases",
+  "release_url": "https://github.com/AhmedTrooper/Portside/releases",
   "author": "AhmedTrooper",
   "severity": "medium",
   "platforms": ["windows"]

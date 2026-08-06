@@ -69,4 +69,5 @@ Thumbs.db
 # Development documentation and scripts
 IMPLEMENTATION_GUIDE.md
 NATIVE_DIALOG_IMPLEMENTATION.md
+AGENTS.md
 *.sh

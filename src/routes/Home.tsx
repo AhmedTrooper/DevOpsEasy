@@ -3,11 +3,14 @@ import { useContainerStore } from "@/store/ContainerStore";
 import { useVolumeStore } from "@/store/VolumeStore";
 import { useNetworkStore } from "@/store/NetworkStore";
 import { useComposeStore } from "@/store/ComposeStore";
-import { Card, CardHeader, CardBody, CardFooter } from "@heroui/react";
+
+import { Card } from "@astryxdesign/core/Card";
+import { Grid } from "@astryxdesign/core/Grid";
+import { Button } from "@astryxdesign/core/Button";
+import { Spinner } from "@astryxdesign/core/Spinner";
 
 import {
   Box,
-  Loader2,
   Container as ContainerIcon,
   Database,
   Network as NetworkIcon,
@@ -16,6 +19,7 @@ import {
 } from "lucide-react";
 import { useEffect } from "react";
 import { Link } from "react-router-dom";
+
 export default function Home() {
   const fetchImages = useImageStore((state) => state.fetchImages);
   const images = useImageStore((state) => state.images);
@@ -51,215 +55,177 @@ export default function Home() {
   }, [fetchImages, fetchContainers, fetchVolumes, fetchNetworks, fetchProjects]);
 
   return (
-    <div className="p-8 grid gap-6">
-      {/* Images Card */}
-      <Card>
-        <CardHeader className="bg-red-500 text-white font-bold text-2xl">
-          <h1 className="flex items-center gap-2 text-3xl font-bold">
-            <Box />
-            <span>Images</span>
-          </h1>
-        </CardHeader>
-        <CardBody>
-          {imagesLoading && (
-            <div className="flex items-center gap-2 text-[18px] font-semibold">
-              <Loader2 className="animate-spin" />
-              <span>Loading Docker images...</span>
-            </div>
-          )}
-          {imagesError && (
-            <div className="text-red-500 text-[18px] font-semibold">
-              <span>Error: {imagesError}</span>
-            </div>
-          )}
-          {!imagesLoading && !imagesError && images && (
-            <h1 className="flex items-center gap-2 text-[18px] font-semibold">
-              <Box />
-              <span>{images.length} docker images found</span>
-            </h1>
-          )}
-        </CardBody>
-        <CardFooter>
-          <Link
-            to="/images"
-            className="text-white text-[15px] font-bold hover:bg-blue-800 w-fit bg-blue-600 p-3 rounded-md"
-          >
-            View all images
-          </Link>
-        </CardFooter>
-      </Card>
+    <div className="p-8">
+      <Grid columns={{ minWidth: 320 }} gap={6}>
+        {/* Images Card */}
+        <Card>
+          <div className="p-6 border-b border-zinc-200 dark:border-zinc-800 bg-red-500/10 flex items-center gap-3">
+            <Box className="w-8 h-8 text-red-600" />
+            <span className="text-2xl font-bold text-red-600">Images</span>
+          </div>
+          <div className="p-6 min-h-[100px] flex items-center">
+            {imagesLoading && (
+              <div className="flex items-center gap-3 font-medium">
+                <Spinner />
+                <span>Loading Docker images...</span>
+              </div>
+            )}
+            {imagesError && (
+              <span className="text-red-500 font-medium">Error: {imagesError}</span>
+            )}
+            {!imagesLoading && !imagesError && images && (
+              <span className="font-semibold text-lg flex items-center gap-2">
+                <Box className="w-5 h-5" />
+                {images.length} docker images found
+              </span>
+            )}
+          </div>
+          <div className="p-6 border-t border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900/50">
+            <Link to="/images">
+              <Button label="View all images">View all images</Button>
+            </Link>
+          </div>
+        </Card>
 
-      {/* Containers Card */}
-      <Card>
-        <CardHeader className="bg-blue-500 text-white font-bold text-2xl">
-          <h1 className="flex items-center gap-2 text-3xl font-bold">
-            <ContainerIcon />
-            <span>Containers</span>
-          </h1>
-        </CardHeader>
-        <CardBody>
-          {containersLoading && (
-            <div className="flex items-center gap-2 text-[18px] font-semibold">
-              <Loader2 className="animate-spin" />
-              <span>Loading Docker containers...</span>
-            </div>
-          )}
-          {containersError && (
-            <div className="text-red-500 text-[18px] font-semibold">
-              <span>Error: {containersError}</span>
-            </div>
-          )}
-          {!containersLoading && !containersError && containers && (
-            <h1 className="flex items-center gap-2 text-[18px] font-semibold">
-              <ContainerIcon />
-              <span>{containers.length} docker containers found</span>
-            </h1>
-          )}
-        </CardBody>
-        <CardFooter>
-          <Link
-            to="/containers"
-            className="text-white text-[15px] font-bold hover:bg-blue-800 w-fit bg-blue-600 p-3 rounded-md"
-          >
-            View all containers
-          </Link>
-        </CardFooter>
-      </Card>
+        {/* Containers Card */}
+        <Card>
+          <div className="p-6 border-b border-zinc-200 dark:border-zinc-800 bg-blue-500/10 flex items-center gap-3">
+            <ContainerIcon className="w-8 h-8 text-blue-600" />
+            <span className="text-2xl font-bold text-blue-600">Containers</span>
+          </div>
+          <div className="p-6 min-h-[100px] flex items-center">
+            {containersLoading && (
+              <div className="flex items-center gap-3 font-medium">
+                <Spinner />
+                <span>Loading Docker containers...</span>
+              </div>
+            )}
+            {containersError && (
+              <span className="text-red-500 font-medium">Error: {containersError}</span>
+            )}
+            {!containersLoading && !containersError && containers && (
+              <span className="font-semibold text-lg flex items-center gap-2">
+                <ContainerIcon className="w-5 h-5" />
+                {containers.length} docker containers found
+              </span>
+            )}
+          </div>
+          <div className="p-6 border-t border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900/50">
+            <Link to="/containers">
+              <Button label="View all containers">View all containers</Button>
+            </Link>
+          </div>
+        </Card>
 
-      {/* Volumes Card */}
-      <Card>
-        <CardHeader className="bg-purple-500 text-white font-bold text-2xl">
-          <h1 className="flex items-center gap-2 text-3xl font-bold">
-            <Database />
-            <span>Volumes</span>
-          </h1>
-        </CardHeader>
-        <CardBody>
-          {volumesLoading && (
-            <div className="flex items-center gap-2 text-[18px] font-semibold">
-              <Loader2 className="animate-spin" />
-              <span>Loading Docker volumes...</span>
-            </div>
-          )}
-          {volumesError && (
-            <div className="text-red-500 text-[18px] font-semibold">
-              <span>Error: {volumesError}</span>
-            </div>
-          )}
-          {!volumesLoading && !volumesError && volumes && (
-            <h1 className="flex items-center gap-2 text-[18px] font-semibold">
-              <Database />
-              <span>{volumes.length} docker volumes found</span>
-            </h1>
-          )}
-        </CardBody>
-        <CardFooter>
-          <Link
-            to="/volumes"
-            className="text-white text-[15px] font-bold hover:bg-blue-800 w-fit bg-blue-600 p-3 rounded-md"
-          >
-            View all volumes
-          </Link>
-        </CardFooter>
-      </Card>
+        {/* Volumes Card */}
+        <Card>
+          <div className="p-6 border-b border-zinc-200 dark:border-zinc-800 bg-purple-500/10 flex items-center gap-3">
+            <Database className="w-8 h-8 text-purple-600" />
+            <span className="text-2xl font-bold text-purple-600">Volumes</span>
+          </div>
+          <div className="p-6 min-h-[100px] flex items-center">
+            {volumesLoading && (
+              <div className="flex items-center gap-3 font-medium">
+                <Spinner />
+                <span>Loading Docker volumes...</span>
+              </div>
+            )}
+            {volumesError && (
+              <span className="text-red-500 font-medium">Error: {volumesError}</span>
+            )}
+            {!volumesLoading && !volumesError && volumes && (
+              <span className="font-semibold text-lg flex items-center gap-2">
+                <Database className="w-5 h-5" />
+                {volumes.length} docker volumes found
+              </span>
+            )}
+          </div>
+          <div className="p-6 border-t border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900/50">
+            <Link to="/volumes">
+              <Button label="View all volumes">View all volumes</Button>
+            </Link>
+          </div>
+        </Card>
 
-      {/* Networks Card */}
-      <Card>
-        <CardHeader className="bg-green-500 text-white font-bold text-2xl">
-          <h1 className="flex items-center gap-2 text-3xl font-bold">
-            <NetworkIcon />
-            <span>Networks</span>
-          </h1>
-        </CardHeader>
-        <CardBody>
-          {networksLoading && (
-            <div className="flex items-center gap-2 text-[18px] font-semibold">
-              <Loader2 className="animate-spin" />
-              <span>Loading Docker networks...</span>
-            </div>
-          )}
-          {networksError && (
-            <div className="text-red-500 text-[18px] font-semibold">
-              <span>Error: {networksError}</span>
-            </div>
-          )}
-          {!networksLoading && !networksError && networks && (
-            <h1 className="flex items-center gap-2 text-[18px] font-semibold">
-              <NetworkIcon />
-              <span>{networks.length} docker networks found</span>
-            </h1>
-          )}
-        </CardBody>
-        <CardFooter>
-          <Link
-            to="/networks"
-            className="text-white text-[15px] font-bold hover:bg-blue-800 w-fit bg-blue-600 p-3 rounded-md"
-          >
-            View all networks
-          </Link>
-        </CardFooter>
-      </Card>
+        {/* Networks Card */}
+        <Card>
+          <div className="p-6 border-b border-zinc-200 dark:border-zinc-800 bg-green-500/10 flex items-center gap-3">
+            <NetworkIcon className="w-8 h-8 text-green-600" />
+            <span className="text-2xl font-bold text-green-600">Networks</span>
+          </div>
+          <div className="p-6 min-h-[100px] flex items-center">
+            {networksLoading && (
+              <div className="flex items-center gap-3 font-medium">
+                <Spinner />
+                <span>Loading Docker networks...</span>
+              </div>
+            )}
+            {networksError && (
+              <span className="text-red-500 font-medium">Error: {networksError}</span>
+            )}
+            {!networksLoading && !networksError && networks && (
+              <span className="font-semibold text-lg flex items-center gap-2">
+                <NetworkIcon className="w-5 h-5" />
+                {networks.length} docker networks found
+              </span>
+            )}
+          </div>
+          <div className="p-6 border-t border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900/50">
+            <Link to="/networks">
+              <Button label="View all networks">View all networks</Button>
+            </Link>
+          </div>
+        </Card>
 
-      {/* Compose Projects Card */}
-      <Card>
-        <CardHeader className="bg-orange-500 text-white font-bold text-2xl">
-          <h1 className="flex items-center gap-2 text-3xl font-bold">
-            <Layers />
-            <span>Compose</span>
-          </h1>
-        </CardHeader>
-        <CardBody>
-          {projectsLoading && (
-            <div className="flex items-center gap-2 text-[18px] font-semibold">
-              <Loader2 className="animate-spin" />
-              <span>Loading Docker Compose projects...</span>
-            </div>
-          )}
-          {projectsError && (
-            <div className="text-red-500 text-[18px] font-semibold">
-              <span>Error: {projectsError}</span>
-            </div>
-          )}
-          {!projectsLoading && !projectsError && projects && (
-            <h1 className="flex items-center gap-2 text-[18px] font-semibold">
-              <Layers />
-              <span>{projects.length} docker compose projects found</span>
-            </h1>
-          )}
-        </CardBody>
-        <CardFooter>
-          <Link
-            to="/compose"
-            className="text-white text-[15px] font-bold hover:bg-blue-800 w-fit bg-blue-600 p-3 rounded-md"
-          >
-            View all projects
-          </Link>
-        </CardFooter>
-      </Card>
+        {/* Compose Projects Card */}
+        <Card>
+          <div className="p-6 border-b border-zinc-200 dark:border-zinc-800 bg-orange-500/10 flex items-center gap-3">
+            <Layers className="w-8 h-8 text-orange-600" />
+            <span className="text-2xl font-bold text-orange-600">Compose</span>
+          </div>
+          <div className="p-6 min-h-[100px] flex items-center">
+            {projectsLoading && (
+              <div className="flex items-center gap-3 font-medium">
+                <Spinner />
+                <span>Loading Docker Compose projects...</span>
+              </div>
+            )}
+            {projectsError && (
+              <span className="text-red-500 font-medium">Error: {projectsError}</span>
+            )}
+            {!projectsLoading && !projectsError && projects && (
+              <span className="font-semibold text-lg flex items-center gap-2">
+                <Layers className="w-5 h-5" />
+                {projects.length} docker compose projects found
+              </span>
+            )}
+          </div>
+          <div className="p-6 border-t border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900/50">
+            <Link to="/compose">
+              <Button label="View all projects">View all projects</Button>
+            </Link>
+          </div>
+        </Card>
 
-      {/* Container Stats Card */}
-      <Card>
-        <CardHeader className="bg-cyan-500 text-white font-bold text-2xl">
-          <h1 className="flex items-center gap-2 text-3xl font-bold">
-            <Activity />
-            <span>Resource Monitoring</span>
-          </h1>
-        </CardHeader>
-        <CardBody>
-          <h1 className="flex items-center gap-2 text-[18px] font-semibold">
-            <Activity />
-            <span>Real-time container resource monitoring</span>
-          </h1>
-        </CardBody>
-        <CardFooter>
-          <Link
-            to="/stats"
-            className="text-white text-[15px] font-bold hover:bg-blue-800 w-fit bg-blue-600 p-3 rounded-md"
-          >
-            View container stats
-          </Link>
-        </CardFooter>
-      </Card>
+        {/* Container Stats Card */}
+        <Card>
+          <div className="p-6 border-b border-zinc-200 dark:border-zinc-800 bg-cyan-500/10 flex items-center gap-3">
+            <Activity className="w-8 h-8 text-cyan-600" />
+            <span className="text-2xl font-bold text-cyan-600">Resource Monitoring</span>
+          </div>
+          <div className="p-6 min-h-[100px] flex items-center">
+            <span className="font-semibold text-lg flex items-center gap-2">
+              <Activity className="w-5 h-5" />
+              Real-time container resource monitoring
+            </span>
+          </div>
+          <div className="p-6 border-t border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900/50">
+            <Link to="/stats">
+              <Button label="View container stats">View container stats</Button>
+            </Link>
+          </div>
+        </Card>
+      </Grid>
     </div>
   );
 }
