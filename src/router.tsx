@@ -18,10 +18,6 @@ const rootRoute = createRootRoute({
         <AppShell
           contentPadding={4}
           sideNav={<Sidebar />}
-          mobileNav={{
-            breakpoint: "md",
-            hasToggle: false,
-          }}
         >
           <Outlet />
         </AppShell>
