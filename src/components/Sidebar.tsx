@@ -3,14 +3,17 @@ import { SideNav, SideNavSection, SideNavItem, SideNavHeading, VStack } from "@a
 import { Home, Info, Boxes, Container, Sun, Moon } from "lucide-react";
 import { useAppTheme } from "../context/ThemeContext";
 
+import { useUIStore } from "../store/uiStore";
+
 export function Sidebar() {
   const location = useLocation();
   const currentPath = location.pathname;
   const { mode, toggleMode } = useAppTheme();
+  const { isSidebarCollapsed, toggleSidebar } = useUIStore();
 
   return (
     <SideNav
-      collapsible={true}
+      collapsible={{ isCollapsed: isSidebarCollapsed, onCollapsedChange: toggleSidebar }}
       header={
         <SideNavHeading
           heading="DevOpsEasy"

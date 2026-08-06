@@ -1,12 +1,27 @@
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { GripHorizontal } from "lucide-react";
+import { GripHorizontal, Menu, Maximize, Minimize } from "lucide-react";
 import { Heading } from "@astryxdesign/core";
 import { MobileNavToggle } from "@astryxdesign/core/MobileNav";
 import { getCurrentWindow } from "@tauri-apps/api/window";
+import { useUIStore } from "../store/uiStore";
 
 const appWindow = getCurrentWindow();
 
 export default function DraggableTitlebar() {
+  const { toggleSidebar } = useUIStore();
+  const [isFullscreen, setIsFullscreen] = useState(false);
+
+  useEffect(() => {
+    appWindow.isFullscreen().then(setIsFullscreen);
+  }, []);
+
+  const handleFullscreen = async () => {
+    const current = await appWindow.isFullscreen();
+    await appWindow.setFullscreen(!current);
+    setIsFullscreen(!current);
+  };
+
   return (
     <motion.div
       drag
@@ -21,13 +36,35 @@ export default function DraggableTitlebar() {
     >
       <GripHorizontal size={20} className="text-gray-400 hover:text-white transition-colors ml-2" />
       
-      <MobileNavToggle />
+      {/* Mobile Nav Drawer Toggle (hidden on md+) */}
+      <div className="md:hidden">
+        <MobileNavToggle />
+      </div>
+
+      {/* Desktop Sidebar Toggle (hidden on mobile) */}
+      <div 
+        className="hidden md:flex items-center justify-center p-1 hover:bg-gray-700 rounded-md cursor-pointer transition-colors"
+        onClick={toggleSidebar}
+        title="Toggle Sidebar"
+      >
+        <Menu size={18} />
+      </div>
 
       <Heading level={5} style={{ margin: 0, fontWeight: 600, letterSpacing: '0.5px' }} className="hidden sm:block">
         DevOpsEasy
       </Heading>
 
       <div className="flex items-center gap-2 ml-2 mr-2">
+        {/* Fullscreen Button */}
+        <div 
+          onClick={handleFullscreen}
+          className="w-4 h-4 flex items-center justify-center rounded-sm hover:bg-gray-700 transition-colors cursor-pointer mr-2"
+          title="Toggle Fullscreen"
+        >
+          {isFullscreen ? <Minimize size={14} className="text-gray-300" /> : <Maximize size={14} className="text-gray-300" />}
+        </div>
+
+        {/* Window Controls */}
         <div 
           onClick={() => appWindow.close()} 
           className="w-3 h-3 rounded-full bg-red-500 hover:bg-red-400 transition-colors cursor-pointer" 
