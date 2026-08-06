@@ -69,8 +69,12 @@ export default function DraggableTitlebar() {
           </div>
           
           {/* Mobile Nav Drawer Toggle (visible on small screens) */}
-          <div className="md:hidden z-10 flex items-center">
-            <MobileNavToggle />
+          <div className="md:hidden z-10 flex items-center justify-center">
+            <MobileNavToggle>
+              <div className="flex items-center justify-center p-1 hover:bg-surface-hover rounded-md cursor-pointer transition-colors">
+                <Menu size={18} />
+              </div>
+            </MobileNavToggle>
           </div>
 
           {/* Sidebar Toggle (visible on large screens) */}
