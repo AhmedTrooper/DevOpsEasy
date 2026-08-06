@@ -96,8 +96,7 @@ export default function DraggableTitlebar() {
               margin: 0, 
               fontWeight: 600, 
               letterSpacing: '0.5px',
-              writingMode: isVertical ? 'vertical-rl' : 'horizontal-tb',
-              transform: isVertical ? 'rotate(180deg)' : 'none'
+              writingMode: isVertical ? 'vertical-rl' : 'horizontal-tb'
             }} 
             className="hidden sm:block select-none pointer-events-none"
           >
