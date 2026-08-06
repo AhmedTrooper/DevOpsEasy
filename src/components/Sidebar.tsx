@@ -5,10 +5,63 @@ import { useAppTheme } from "../context/ThemeContext";
 
 import { useUIStore } from "../store/uiStore";
 
-export function Sidebar() {
+import { MobileNav } from "@astryxdesign/core/MobileNav";
+
+function NavItems() {
   const location = useLocation();
   const currentPath = location.pathname;
   const { mode, toggleMode } = useAppTheme();
+
+  return (
+    <VStack className="gap-2 px-3 py-2">
+      <SideNavSection title="MENU" className="m-2">
+        <SideNavItem
+          label="Home"
+          icon={<Home className="w-4 h-4 m-2" />}
+          isSelected={currentPath === "/"}
+          as={Link}
+          href="/"
+          size="md"
+        />
+        <SideNavItem
+          label="Workspaces"
+          icon={<Boxes className="w-4 h-4 m-2" />}
+          isSelected={currentPath === "/workspaces"}
+          as={Link}
+          href="/workspaces"
+          size="md"
+        />
+        <SideNavItem
+          label="Docker"
+          icon={<Container className="w-4 h-4 m-2" />}
+          isSelected={currentPath === "/docker"}
+          as={Link}
+          href="/docker"
+          size="md"
+        />
+        <SideNavItem
+          label="About"
+          icon={<Info className="w-4 h-4 m-2" />}
+          isSelected={currentPath === "/about"}
+          as={Link}
+          href="/about"
+          size="md"
+        />
+      </SideNavSection>
+
+      <SideNavSection title="THEME" className="m-2">
+        <SideNavItem
+          label={mode === "dark" ? "Light Mode" : "Dark Mode"}
+          icon={mode === "dark" ? <Sun className="w-4 h-4 m-2" /> : <Moon className="w-4 h-4 m-2" />}
+          onClick={toggleMode}
+          size="md"
+        />
+      </SideNavSection>
+    </VStack>
+  );
+}
+
+export function Sidebar() {
   const { isSidebarCollapsed, toggleSidebar } = useUIStore();
 
   return (
@@ -22,52 +75,16 @@ export function Sidebar() {
         />
       }
     >
-      <VStack className="gap-2 px-3 py-2">
-        <SideNavSection title="MENU" className="m-2">
-          <SideNavItem
-            label="Home"
-            icon={<Home className="w-4 h-4 m-2" />}
-            isSelected={currentPath === "/"}
-            as={Link}
-            href="/"
-            size="md"
-          />
-          <SideNavItem
-            label="Workspaces"
-            icon={<Boxes className="w-4 h-4 m-2" />}
-            isSelected={currentPath === "/workspaces"}
-            as={Link}
-            href="/workspaces"
-            size="md"
-          />
-          <SideNavItem
-            label="Docker"
-            icon={<Container className="w-4 h-4 m-2" />}
-            isSelected={currentPath === "/docker"}
-            as={Link}
-            href="/docker"
-            size="md"
-          />
-          <SideNavItem
-            label="About"
-            icon={<Info className="w-4 h-4 m-2" />}
-            isSelected={currentPath === "/about"}
-            as={Link}
-            href="/about"
-            size="md"
-          />
-        </SideNavSection>
-
-        <SideNavSection title="THEME" className="m-2">
-          <SideNavItem
-            label={mode === "dark" ? "Light Mode" : "Dark Mode"}
-            icon={mode === "dark" ? <Sun className="w-4 h-4 m-2" /> : <Moon className="w-4 h-4 m-2" />}
-            onClick={toggleMode}
-            size="md"
-          />
-        </SideNavSection>
-      </VStack>
+      <NavItems />
     </SideNav>
+  );
+}
+
+export function MobileSidebar() {
+  return (
+    <MobileNav header={<div className="font-bold text-lg px-4 py-4">DevOpsEasy</div>}>
+      <NavItems />
+    </MobileNav>
   );
 }
 

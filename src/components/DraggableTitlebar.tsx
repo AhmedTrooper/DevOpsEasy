@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { GripHorizontal, Menu, Maximize, Minimize, GripVertical, X, Minus } from "lucide-react";
 import { Heading } from "@astryxdesign/core";
 import { Switch } from "@astryxdesign/core/Switch";
+import { MobileNavToggle } from "@astryxdesign/core/MobileNav";
 import { getCurrentWindow } from "@tauri-apps/api/window";
 import { useUIStore } from "../store/uiStore";
 
@@ -81,9 +82,14 @@ export default function DraggableTitlebar() {
             {isVertical ? <GripHorizontal size={20} /> : <GripVertical size={20} />}
           </div>
           
-          {/* Sidebar Toggle (visible on all screens) */}
+          {/* Mobile Nav Drawer Toggle (visible on small screens) */}
+          <div className="md:hidden z-10 flex items-center">
+            <MobileNavToggle />
+          </div>
+
+          {/* Sidebar Toggle (visible on large screens) */}
           <div 
-            className="flex items-center justify-center p-1 hover:bg-surface-hover rounded-md cursor-pointer transition-colors z-10"
+            className="hidden md:flex items-center justify-center p-1 hover:bg-surface-hover rounded-md cursor-pointer transition-colors z-10"
             onClick={toggleSidebar}
             title="Toggle Sidebar"
           >

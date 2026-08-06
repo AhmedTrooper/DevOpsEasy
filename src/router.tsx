@@ -1,7 +1,7 @@
 import { createRootRoute, createRoute, createRouter, Outlet } from "@tanstack/react-router";
 import { AppShell } from "@astryxdesign/core";
 import { ThemeProvider } from "./context/ThemeContext";
-import Sidebar from "./components/Sidebar";
+import { Sidebar, MobileSidebar } from "./components/Sidebar";
 import HomePage from "./features/home/HomePage";
 import AboutPage from "./features/about/AboutPage";
 import WorkspacesPage from "./features/workspaces/WorkspacesPage";
@@ -18,6 +18,7 @@ const rootRoute = createRootRoute({
         <AppShell
           contentPadding={4}
           sideNav={<Sidebar />}
+          mobileNav={<MobileSidebar />}
         >
           <Outlet />
         </AppShell>
