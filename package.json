@@ -18,6 +18,7 @@
     "@heroui/card": "^2.2.19",
     "@heroui/code": "^2.2.15",
     "@heroui/react": "^2.7.9",
+    "@tanstack/react-router": "^1.170.21",
     "@tauri-apps/api": "^2",
     "@tauri-apps/plugin-clipboard-manager": "^2.3.2",
     "@tauri-apps/plugin-dialog": "^2.4.2",
