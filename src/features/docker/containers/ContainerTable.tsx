@@ -3,12 +3,26 @@ import { listen } from "@tauri-apps/api/event";
 import { invoke } from "@tauri-apps/api/core";
 import { Table, TableHeader, TableHeaderCell } from "@astryxdesign/core/Table";
 import { Card } from "@astryxdesign/core/Card";
-import { Badge } from "@astryxdesign/core/Badge";
 import { Toolbar } from "@astryxdesign/core/Toolbar";
 import { Button } from "@astryxdesign/core/Button";
 import { Icon } from "@astryxdesign/core/Icon";
 import { Heading } from "@astryxdesign/core/Text";
-import { RefreshCw, Play, Square, RotateCw, Trash2, MoreVertical, ShieldAlert } from "lucide-react";
+import {
+  RefreshCw,
+  Play,
+  Square,
+  RotateCw,
+  Trash2,
+  MoreVertical,
+  ShieldAlert,
+  CircleDashed,
+  CheckCircle2,
+  Loader2,
+  Pause,
+  StopCircle,
+  XCircle,
+  HelpCircle,
+} from "lucide-react";
 import { useVirtualizer } from "@tanstack/react-virtual";
 import { DropdownMenu } from "@astryxdesign/core/DropdownMenu";
 
@@ -22,15 +36,155 @@ interface DockerContainer extends Record<string, unknown> {
   Ports: string;
 }
 
-const GRID_COLUMNS = "20% 20% 100px 20% 20% 80px";
+const GRID_COLUMNS = "20% 20% 120px 20% 20% 80px";
 
-const getVariant = (state: string): "success" | "warning" | "error" | "info" => {
-  const s = state.toLowerCase();
-  if (s === "running") return "success";
-  if (s === "exited") return "error";
-  if (s === "paused") return "warning";
-  return "info";
+// =============================================================================
+// Status pill configuration
+// -----------------------------------------------------------------------------
+// Maps every documented Docker container state (and a sensible "unknown"
+// fallback) to a coloured CSS dot, optional pulse animation, theme-aware tint,
+// semantic icon, and a presentational label. Each entry only references theme
+// tokens — no hardcoded colors — so it adapts to any Astryx theme.
+//
+// Docker states (per `docker ps --format '{{json .}}'`):
+//   created | restarting | running | removing | paused | exited | dead
+// =============================================================================
+type StatusTone = "success" | "warning" | "error" | "info" | "neutral";
+
+interface StatusConfig {
+  tone: StatusTone;
+  /** Foreground color for the dot, the badge tint and the icon. */
+  textColorVar: string;
+  /** Background color for the pill behind the dot. */
+  bgColorVar: string;
+  /** Optional Lucide icon rendered before the label. */
+  icon: typeof CheckCircle2;
+  /** When true, the dot pulses to draw attention (only for "live" states). */
+  pulse: boolean;
+  /** Display label shown to the user (defaults to Title-cased state). */
+  label: string;
+}
+
+const STATUS_CONFIG: Record<string, StatusConfig> = {
+  running: {
+    tone: "success",
+    textColorVar: "var(--color-text-green)",
+    bgColorVar: "var(--color-background-green)",
+    icon: CheckCircle2,
+    pulse: true,
+    label: "Running",
+  },
+  paused: {
+    tone: "warning",
+    textColorVar: "var(--color-text-yellow)",
+    bgColorVar: "var(--color-background-yellow)",
+    icon: Pause,
+    pulse: false,
+    label: "Paused",
+  },
+  restarting: {
+    tone: "info",
+    textColorVar: "var(--color-text-blue)",
+    bgColorVar: "var(--color-background-blue)",
+    icon: RotateCw,
+    pulse: true,
+    label: "Restarting",
+  },
+  created: {
+    tone: "info",
+    textColorVar: "var(--color-text-blue)",
+    bgColorVar: "var(--color-background-blue)",
+    icon: CircleDashed,
+    pulse: false,
+    label: "Created",
+  },
+  exited: {
+    tone: "error",
+    textColorVar: "var(--color-text-red)",
+    bgColorVar: "var(--color-background-red)",
+    icon: StopCircle,
+    pulse: false,
+    label: "Exited",
+  },
+  dead: {
+    tone: "error",
+    textColorVar: "var(--color-text-red)",
+    bgColorVar: "var(--color-background-red)",
+    icon: XCircle,
+    pulse: false,
+    label: "Dead",
+  },
+  removing: {
+    tone: "warning",
+    textColorVar: "var(--color-text-yellow)",
+    bgColorVar: "var(--color-background-yellow)",
+    icon: Loader2,
+    pulse: true,
+    label: "Removing",
+  },
 };
+
+const FALLBACK_STATUS: StatusConfig = {
+  tone: "neutral",
+  textColorVar: "var(--color-text-secondary)",
+  bgColorVar: "var(--color-background-muted)",
+  icon: HelpCircle,
+  pulse: false,
+  label: "Unknown",
+};
+
+function getStatusConfig(state: string): StatusConfig {
+  return STATUS_CONFIG[state.toLowerCase()] ?? FALLBACK_STATUS;
+}
+
+// =============================================================================
+// StatusPill — a small status indicator: coloured dot + icon + label.
+// Renders inline-flex with consistent geometry so all rows line up visually.
+// =============================================================================
+function StatusPill({ state }: { state: string }) {
+  const cfg = getStatusConfig(state);
+  const IconComp = cfg.icon;
+  return (
+    <span
+      role="status"
+      aria-label={`Status: ${cfg.label}`}
+      className="inline-flex items-center gap-1.5 rounded-full text-xs font-medium leading-none px-2 py-1 select-none"
+      style={{
+        color: cfg.textColorVar,
+        backgroundColor: cfg.bgColorVar,
+        border: "1px solid color-mix(in srgb, currentColor 30%, transparent)",
+      }}
+    >
+      {/* Pulsing halo for live states (running, restarting, removing) */}
+      {cfg.pulse && (
+        <span
+          aria-hidden
+          className="relative inline-flex h-2 w-2"
+          style={{ color: cfg.textColorVar }}
+        >
+          <span
+            className="absolute inline-flex h-full w-full rounded-full opacity-75 animate-ping"
+            style={{ backgroundColor: "currentColor" }}
+          />
+          <span
+            className="relative inline-flex h-2 w-2 rounded-full"
+            style={{ backgroundColor: "currentColor" }}
+          />
+        </span>
+      )}
+      {/* Static dot for non-pulsing states */}
+      {!cfg.pulse && (
+        <span
+          aria-hidden
+          className="inline-block h-2 w-2 rounded-full"
+          style={{ backgroundColor: cfg.textColorVar }}
+        />
+      )}
+      <IconComp size={12} aria-hidden strokeWidth={2.5} />
+      <span>{cfg.label}</span>
+    </span>
+  );
+}
 
 interface ContainerRowProps {
   container: DockerContainer;
@@ -48,7 +202,7 @@ const ContainerRow = memo(({ container, onAction }: ContainerRowProps) => {
       <div className="truncate px-3">{container.Names}</div>
       <div className="truncate px-3">{container.Image}</div>
       <div className="px-3">
-        <Badge variant={getVariant(container.State)} label={container.State} />
+        <StatusPill state={container.State} />
       </div>
       <div className="truncate px-3">{container.Status}</div>
       <div className="truncate px-3">{container.Ports}</div>
@@ -216,7 +370,7 @@ export function ContainerTable() {
             <TableHeader>
               <TableHeaderCell style={{ width: "20%" }}>Name</TableHeaderCell>
               <TableHeaderCell style={{ width: "20%" }}>Image</TableHeaderCell>
-              <TableHeaderCell style={{ width: "100px" }}>State</TableHeaderCell>
+              <TableHeaderCell style={{ width: "120px" }}>State</TableHeaderCell>
               <TableHeaderCell style={{ width: "20%" }}>Status</TableHeaderCell>
               <TableHeaderCell style={{ width: "20%" }}>Ports</TableHeaderCell>
               <TableHeaderCell style={{ width: "80px", textAlign: "right" }}>
