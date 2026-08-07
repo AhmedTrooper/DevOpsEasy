@@ -25,6 +25,7 @@ import {
 } from "lucide-react";
 import { useVirtualizer } from "@tanstack/react-virtual";
 import { DropdownMenu } from "@astryxdesign/core/DropdownMenu";
+import { useToast } from "@astryxdesign/core/Toast";
 
 // Match the JSON structure from `docker ps --format '{{json .}}'`
 interface DockerContainer extends Record<string, unknown> {
@@ -263,6 +264,7 @@ ContainerRow.displayName = "ContainerRow";
 export function ContainerTable() {
   const [containers, setContainers] = useState<DockerContainer[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const toast = useToast();
 
   const parentRef = useRef<HTMLDivElement>(null);
 
@@ -276,38 +278,49 @@ export function ContainerTable() {
   const fetchState = async () => {
     try {
       setIsLoading(true);
-      const initialState = await invoke<{ docker: { containers: DockerContainer[] } }>(
-        "get_global_state"
-      );
-      setContainers(initialState.docker.containers);
+      const raw: unknown = await invoke("get_global_state");
+      const containers = parseContainersFromState(raw);
+      if (containers === null) {
+        toast({
+          type: "error",
+          body: "Received an unexpected response from the backend.",
+          isAutoHide: false,
+        });
+        return;
+      }
+      setContainers(containers);
     } catch (e) {
-      console.error("Failed to fetch initial state", e);
+      toast({
+        type: "error",
+        body: `Failed to load containers: ${stringifyError(e)}`,
+        isAutoHide: false,
+      });
     } finally {
       setIsLoading(false);
     }
   };
 
   useEffect(() => {
-    let unlisten: () => void;
+    let unlisten: () => void = () => {};
 
     async function setupListener() {
       // 1. Fetch initial state
       await fetchState();
 
-      // 2. Listen for updates
-      unlisten = await listen<{ state: { docker: { containers: DockerContainer[] } } }>(
-        "global-state-updated",
-        (event) => {
-          setContainers(event.payload.state.docker.containers);
-          setIsLoading(false);
-        }
-      );
+      // 2. Listen for updates — narrow the unknown payload defensively so a
+      // backend shape change can't crash the table or feed bad rows.
+      unlisten = await listen<unknown>("global-state-updated", (event) => {
+        const containers = parseContainersFromState(event.payload);
+        if (containers === null) return;
+        setContainers(containers);
+        setIsLoading(false);
+      });
     }
 
     setupListener();
 
     return () => {
-      if (unlisten) unlisten();
+      unlisten();
     };
   }, []);
 
@@ -340,8 +353,11 @@ export function ContainerTable() {
       // Trigger a refresh after a small delay to allow docker to process the state change
       setTimeout(fetchState, 500);
     } catch (e) {
-      console.error(`Failed to ${action} container ${id}:`, e);
-      // TODO: show toast error
+      toast({
+        type: "error",
+        body: `Failed to ${action} container ${shortId(id)}: ${stringifyError(e)}`,
+        isAutoHide: false,
+      });
     }
   };
 
@@ -416,4 +432,50 @@ export function ContainerTable() {
       )}
     </Card>
   );
+}
+
+function shortId(id: string): string {
+  return id.length > 12 ? id.slice(0, 12) : id;
+}
+
+function stringifyError(e: unknown): string {
+  if (e instanceof Error) return e.message;
+  if (typeof e === "string") return e;
+  try {
+    return JSON.stringify(e);
+  } catch {
+    return String(e);
+  }
+}
+
+/**
+ * Narrow an unknown payload from `get_global_state` / `global-state-updated`
+ * into a `DockerContainer[]`. Returns null on any mismatch — never partially
+ * typed data.
+ */
+function isDockerContainer(value: unknown): value is DockerContainer {
+  if (!value || typeof value !== "object") return false;
+  const v = value as Record<string, unknown>;
+  if (typeof v.ID !== "string") return false;
+  if (typeof v.Names !== "string") return false;
+  if (typeof v.Image !== "string") return false;
+  if (typeof v.State !== "string") return false;
+  if (typeof v.Status !== "string") return false;
+  if (typeof v.Ports !== "string") return false;
+  return true;
+}
+
+function parseContainersFromState(payload: unknown): DockerContainer[] | null {
+  if (!payload || typeof payload !== "object") return null;
+  const state = (payload as Record<string, unknown>).state;
+  if (!state || typeof state !== "object") return null;
+  const docker = (state as Record<string, unknown>).docker;
+  if (!docker || typeof docker !== "object") return null;
+  const raw = (docker as Record<string, unknown>).containers;
+  if (!Array.isArray(raw)) return null;
+  const out: DockerContainer[] = [];
+  for (const item of raw) {
+    if (isDockerContainer(item)) out.push(item);
+  }
+  return out;
 }

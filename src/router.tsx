@@ -7,6 +7,9 @@ import AboutPage from "./features/about/AboutPage";
 import WorkspacesPage from "./features/workspaces/WorkspacesPage";
 import DockerPage from "./features/docker/DockerPage";
 import ContainerPage from "./features/docker/containers/ContainerPage";
+import ImagePage from "./features/docker/images/ImagePage";
+import AwsPage from "./features/aws/AwsPage";
+import GitPage from "./features/git/GitPage";
 import DraggableTitlebar from "./components/DraggableTitlebar";
 import { useUIStore } from "./store/uiStore";
 function AppLayout() {
@@ -71,6 +74,13 @@ const dockerContainersRoute = createRoute({
   component: ContainerPage,
 });
 
+// 4.2 Docker Images Route
+const dockerImagesRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "/docker/images",
+  component: ImagePage,
+});
+
 // 5. About Route
 const aboutRoute = createRoute({
   getParentRoute: () => rootRoute,
@@ -78,13 +88,30 @@ const aboutRoute = createRoute({
   component: AboutPage,
 });
 
-// 6. Route Tree & Router
+// 6. AWS Route (placeholder dashboard)
+const awsRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "/aws",
+  component: AwsPage,
+});
+
+// 7. Git Route (placeholder dashboard)
+const gitRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "/git",
+  component: GitPage,
+});
+
+// 8. Route Tree & Router
 const routeTree = rootRoute.addChildren([
   indexRoute,
   workspacesRoute,
   dockerRoute,
   dockerContainersRoute,
+  dockerImagesRoute,
   aboutRoute,
+  awsRoute,
+  gitRoute,
 ]);
 
 export const router = createRouter({ routeTree });

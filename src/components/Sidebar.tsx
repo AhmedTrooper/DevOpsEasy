@@ -1,11 +1,21 @@
 import { Link, useLocation } from "@tanstack/react-router";
 import { SideNav, SideNavSection, SideNavItem, SideNavHeading, VStack } from "@astryxdesign/core";
-import { Home, Info, Boxes, Container, Sun, Moon } from "lucide-react";
+import { Home, Info, Boxes, Container, Sun, Moon, Cloud, GitBranch } from "lucide-react";
 import { useAppTheme } from "../context/ThemeContext";
 
 import { useUIStore } from "../store/uiStore";
 
 import { MobileNav } from "@astryxdesign/core/MobileNav";
+
+// `isExact` lets the caller distinguish section roots (which should highlight
+// on exact match) from section entries (which should highlight on any nested
+// route, e.g. `/docker/containers` still highlights "Docker").
+function isSelected(currentPath: string, target: string, exact: boolean): boolean {
+  if (exact) {
+    return currentPath === target;
+  }
+  return currentPath === target || currentPath.startsWith(`${target}/`);
+}
 
 function NavItems() {
   const location = useLocation();
@@ -26,7 +36,7 @@ function NavItems() {
         <SideNavItem
           label="Workspaces"
           icon={<Boxes className="w-4 h-4 m-2" />}
-          isSelected={currentPath === "/workspaces"}
+          isSelected={isSelected(currentPath, "/workspaces", true)}
           as={Link}
           href="/workspaces"
           size="md"
@@ -34,15 +44,31 @@ function NavItems() {
         <SideNavItem
           label="Docker"
           icon={<Container className="w-4 h-4 m-2" />}
-          isSelected={currentPath === "/docker"}
+          isSelected={isSelected(currentPath, "/docker", false)}
           as={Link}
           href="/docker"
           size="md"
         />
         <SideNavItem
+          label="AWS"
+          icon={<Cloud className="w-4 h-4 m-2" />}
+          isSelected={isSelected(currentPath, "/aws", false)}
+          as={Link}
+          href="/aws"
+          size="md"
+        />
+        <SideNavItem
+          label="Git"
+          icon={<GitBranch className="w-4 h-4 m-2" />}
+          isSelected={isSelected(currentPath, "/git", false)}
+          as={Link}
+          href="/git"
+          size="md"
+        />
+        <SideNavItem
           label="About"
           icon={<Info className="w-4 h-4 m-2" />}
-          isSelected={currentPath === "/about"}
+          isSelected={isSelected(currentPath, "/about", true)}
           as={Link}
           href="/about"
           size="md"

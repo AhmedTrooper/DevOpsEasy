@@ -1,5 +1,9 @@
+pub mod aws;
 pub mod docker;
+pub mod git;
 pub mod state;
+
+use tauri::Manager;
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
@@ -13,12 +17,16 @@ pub fn run() {
         .plugin(tauri_plugin_opener::init())
         .invoke_handler(tauri::generate_handler![
             state::get_global_state,
-            docker::docker_start_container,
-            docker::docker_stop_container,
-            docker::docker_restart_container,
-            docker::docker_remove_container,
+            docker::containers::docker_start_container,
+            docker::containers::docker_stop_container,
+            docker::containers::docker_restart_container,
+            docker::containers::docker_remove_container,
+            docker::images::docker_pull_image,
+            docker::images::docker_remove_image,
+            docker::images::get_image_operations,
         ])
         .setup(|app| {
+            app.manage(docker::images::new_ops_map());
             state::init(app);
             Ok(())
         })
