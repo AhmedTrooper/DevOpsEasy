@@ -35,15 +35,17 @@ export function DockerPage() {
           </Card>
         </Link>
 
-        <Card className="p-6 opacity-50 cursor-not-allowed">
-          <VStack gap={2}>
-            <div className="inline-flex items-center gap-2">
-              <Network size={18} aria-hidden />
-              <Heading level={3}>Networks</Heading>
-            </div>
-            <Text type="supporting" color="secondary">Coming soon...</Text>
-          </VStack>
-        </Card>
+        <Link to="/docker/networks">
+          <Card className="p-6 hover:shadow-lg transition-shadow cursor-pointer">
+            <VStack gap={2}>
+              <div className="inline-flex items-center gap-2">
+                <Network size={18} aria-hidden />
+                <Heading level={3}>Networks</Heading>
+              </div>
+              <Text type="supporting" color="secondary">Browse, create, and remove networks.</Text>
+            </VStack>
+          </Card>
+        </Link>
       </div>
     </VStack>
   );

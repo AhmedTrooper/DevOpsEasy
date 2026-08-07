@@ -24,9 +24,13 @@ pub fn run() {
             docker::images::docker_pull_image,
             docker::images::docker_remove_image,
             docker::images::get_image_operations,
+            docker::networks::docker_create_network,
+            docker::networks::docker_remove_network,
+            docker::networks::get_network_operations,
         ])
         .setup(|app| {
             app.manage(docker::images::new_ops_map());
+            app.manage(docker::networks::new_ops_map());
             state::init(app);
             Ok(())
         })

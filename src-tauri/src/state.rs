@@ -10,6 +10,7 @@ use tauri::{Emitter, Manager};
 pub struct DockerStateData {
     pub containers: Vec<Value>,
     pub images: Vec<Value>,
+    pub networks: Vec<Value>,
 }
 
 #[derive(Default, Clone, Serialize, PartialEq)]
@@ -87,6 +88,26 @@ pub fn init(app: &mut tauri::App) {
                     }
                 }
                 new_state.docker.images = images;
+            }
+        }
+
+        // 3. Fetch Docker Networks
+        if let Ok(output) = Command::new("docker")
+            .args(["network", "ls", "--format", "{{json .}}"])
+            .output()
+        {
+            if output.status.success() {
+                let stdout = String::from_utf8_lossy(&output.stdout);
+                let mut networks = Vec::new();
+                for line in stdout.lines() {
+                    let line = line.trim();
+                    if !line.is_empty() {
+                        if let Ok(json_val) = serde_json::from_str::<Value>(line) {
+                            networks.push(json_val);
+                        }
+                    }
+                }
+                new_state.docker.networks = networks;
             }
         }
 

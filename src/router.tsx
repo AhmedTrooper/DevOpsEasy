@@ -8,6 +8,7 @@ import WorkspacesPage from "./features/workspaces/WorkspacesPage";
 import DockerPage from "./features/docker/DockerPage";
 import ContainerPage from "./features/docker/containers/ContainerPage";
 import ImagePage from "./features/docker/images/ImagePage";
+import NetworkPage from "./features/docker/networks/NetworkPage";
 import AwsPage from "./features/aws/AwsPage";
 import GitPage from "./features/git/GitPage";
 import DraggableTitlebar from "./components/DraggableTitlebar";
@@ -81,6 +82,13 @@ const dockerImagesRoute = createRoute({
   component: ImagePage,
 });
 
+// 4.3 Docker Networks Route
+const dockerNetworksRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "/docker/networks",
+  component: NetworkPage,
+});
+
 // 5. About Route
 const aboutRoute = createRoute({
   getParentRoute: () => rootRoute,
@@ -109,6 +117,7 @@ const routeTree = rootRoute.addChildren([
   dockerRoute,
   dockerContainersRoute,
   dockerImagesRoute,
+  dockerNetworksRoute,
   aboutRoute,
   awsRoute,
   gitRoute,

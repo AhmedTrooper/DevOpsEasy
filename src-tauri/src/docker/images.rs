@@ -11,14 +11,13 @@
 //! a "Done"/"Error" pill. The frontend is responsible for garbage-collecting
 //! old entries from its own mirror state.
 
+use super::{docker_command, now_ms};
 use serde::Serialize;
 use std::collections::HashMap;
 use std::io::{BufRead, BufReader, Read};
-use std::path::PathBuf;
-use std::process::{Command, ExitStatus, Stdio};
+use std::process::{ExitStatus, Stdio};
 use std::sync::{Arc, RwLock};
 use std::thread;
-use std::time::{SystemTime, UNIX_EPOCH};
 use tauri::{command, AppHandle, Emitter};
 
 // =============================================================================
@@ -87,15 +86,6 @@ pub fn get_image_operations(state: tauri::State<'_, ImageOpsMap>) -> Vec<ImageOp
 // Internal helpers
 // =============================================================================
 
-fn now_ms() -> u64 {
-    // `SystemTime` returns a Result on the off chance the clock is before
-    // the epoch. Fall back to 0 — never panic the worker thread.
-    SystemTime::now()
-        .duration_since(UNIX_EPOCH)
-        .map(|d| d.as_millis() as u64)
-        .unwrap_or(0)
-}
-
 fn emit_update(app: &AppHandle, op: &ImageOperation) {
     // We don't care if the emit fails (e.g. window not ready); the next
     // update will catch the listener up.
@@ -121,57 +111,6 @@ fn finish_op(
             emit_update(app, op);
         }
     }
-}
-
-/// Resolve the `docker` binary location. Tries the user's PATH first via the
-/// platform-appropriate filename, and if that's not resolvable, probes the
-/// well-known absolute install locations for each platform. The first
-/// existing path wins; we don't override PATH.
-///
-/// Returning a `Command` (rather than the resolved path) keeps the call site
-/// symmetrical: `docker_command().args([...]).spawn()` works the same whether
-/// `docker` was found on PATH or at an absolute fallback.
-fn docker_command() -> Command {
-    let primary = if cfg!(windows) {
-        "docker.exe"
-    } else {
-        "docker"
-    };
-
-    // Try the bare name first — every modern install puts it on PATH and
-    // going via PATH preserves any shell wrappers (aliases, sudo rules, etc.).
-    // Only fall back to absolute paths if PATH resolution will likely fail,
-    // i.e., the named binary can't be found anywhere reachable.
-    let fallback_paths: &[&str] = if cfg!(windows) {
-        &[
-            r"C:\Program Files\Docker\Docker\resources\bin\docker.exe",
-            r"C:\Program Files\Docker\Docker\bin\docker.exe",
-        ]
-    } else if cfg!(target_os = "macos") {
-        &[
-            "/usr/local/bin/docker",
-            "/Applications/Docker.app/Contents/Resources/bin/docker",
-            "/opt/homebrew/bin/docker",
-        ]
-    } else {
-        &[
-            "/usr/bin/docker",
-            "/usr/local/bin/docker",
-            "/snap/bin/docker",
-            "/var/lib/flatpak/exports/bin/docker",
-        ]
-    };
-
-    for path_str in fallback_paths {
-        let p = PathBuf::from(path_str);
-        if p.exists() {
-            return Command::new(p);
-        }
-    }
-
-    // Last resort: let the OS resolve via PATH. If this fails the caller
-    // surfaces a friendly "docker not found" error.
-    Command::new(primary)
 }
 
 // =============================================================================
