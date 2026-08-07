@@ -1,5 +1,10 @@
 //! Git / source-control-management integration.
 //!
-//! Placeholder. New git subcommands belong in their own submodule file (e.g.
-//! `repos.rs`, `commits.rs`); re-export them here so the rest of the app
-//! continues to address commands as `git::foo`.
+//! Submodules:
+//!   - `repos` — read-only `git status` for a given path
+//!
+//! New submodules (commits, diffs, branches) belong in their own files and
+//! should be re-exported here so the rest of the app continues to address
+//! commands as `git::foo`.
+
+pub mod repos;
