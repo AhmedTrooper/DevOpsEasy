@@ -369,9 +369,7 @@ function isDockerImage(value: unknown): value is DockerImage {
 
 function parseImagesFromState(payload: unknown): DockerImage[] | null {
   if (!payload || typeof payload !== "object") return null;
-  const state = (payload as Record<string, unknown>).state;
-  if (!state || typeof state !== "object") return null;
-  const docker = (state as Record<string, unknown>).docker;
+  const docker = (payload as Record<string, unknown>).docker;
   if (!docker || typeof docker !== "object") return null;
   const raw = (docker as Record<string, unknown>).images;
   if (!Array.isArray(raw)) return null;
