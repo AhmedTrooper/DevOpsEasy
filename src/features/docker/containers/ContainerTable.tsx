@@ -37,7 +37,7 @@ interface DockerContainer extends Record<string, unknown> {
   Ports: string;
 }
 
-const GRID_COLUMNS = "20% 20% 120px 20% 20% 80px";
+const GRID_COLUMNS = "80px 20% 20% 120px 20% 20%";
 
 // =============================================================================
 // Status pill configuration
@@ -200,14 +200,7 @@ const ContainerRow = memo(({ container, onAction }: ContainerRowProps) => {
       className="grid items-center border-b border-default text-sm"
       style={{ gridTemplateColumns: GRID_COLUMNS, height: "100%", width: "100%" }}
     >
-      <div className="truncate px-3">{container.Names}</div>
-      <div className="truncate px-3">{container.Image}</div>
       <div className="px-3">
-        <StatusPill state={container.State} />
-      </div>
-      <div className="truncate px-3">{container.Status}</div>
-      <div className="truncate px-3">{container.Ports}</div>
-      <div className="px-3" style={{ textAlign: "right" }}>
         <DropdownMenu
           button={{
             label: "Row actions",
@@ -250,6 +243,13 @@ const ContainerRow = memo(({ container, onAction }: ContainerRowProps) => {
           ]}
         />
       </div>
+      <div className="truncate px-3">{container.Names}</div>
+      <div className="truncate px-3">{container.Image}</div>
+      <div className="px-3">
+        <StatusPill state={container.State} />
+      </div>
+      <div className="truncate px-3">{container.Status}</div>
+      <div className="truncate px-3">{container.Ports}</div>
     </div>
   );
 }, (prevProps, nextProps) => {
@@ -385,14 +385,14 @@ export function ContainerTable() {
           {/* Header lives OUTSIDE the scroll container so it stays pinned to the top of the Card. */}
           <Table density="spacious" className="shrink-0">
             <TableHeader>
+              <TableHeaderCell style={{ width: "80px" }}>
+                Actions
+              </TableHeaderCell>
               <TableHeaderCell style={{ width: "20%" }}>Name</TableHeaderCell>
               <TableHeaderCell style={{ width: "20%" }}>Image</TableHeaderCell>
               <TableHeaderCell style={{ width: "120px" }}>State</TableHeaderCell>
               <TableHeaderCell style={{ width: "20%" }}>Status</TableHeaderCell>
               <TableHeaderCell style={{ width: "20%" }}>Ports</TableHeaderCell>
-              <TableHeaderCell style={{ width: "80px", textAlign: "right" }}>
-                Actions
-              </TableHeaderCell>
             </TableHeader>
           </Table>
 

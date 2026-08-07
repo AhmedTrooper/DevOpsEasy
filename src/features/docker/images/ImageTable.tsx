@@ -30,7 +30,7 @@ interface DockerImage extends Record<string, unknown> {
   Containers: string;
 }
 
-const GRID_COLUMNS = "minmax(0, 1.4fr) minmax(0, 1fr) minmax(0, 1fr) 100px 80px";
+const GRID_COLUMNS = "80px minmax(0, 1.4fr) minmax(0, 1fr) minmax(0, 1fr) 100px";
 
 function repositoryDisplay(image: DockerImage): string {
   if (image.Repository === "<none>") return "<dangling>";
@@ -59,20 +59,7 @@ const ImageRow = memo(({ image, onRemove }: ImageRowProps) => {
       className="grid items-center border-b border-default text-sm"
       style={{ gridTemplateColumns: GRID_COLUMNS, height: "100%", width: "100%" }}
     >
-      <div className="truncate px-3" title={repositoryDisplay(image)}>
-        {repositoryDisplay(image)}
-      </div>
-      <div className="truncate px-3" title={tagDisplay(image)}>
-        {tagDisplay(image)}
-      </div>
-      <div className="truncate px-3" title={image.ID}>
-        <code className="text-xs opacity-80">{image.ID}</code>
-      </div>
-      <div className="px-3 inline-flex items-center gap-1.5">
-        <Layers size={12} className="opacity-60" aria-hidden />
-        <span>{image.Size}</span>
-      </div>
-      <div className="px-3" style={{ textAlign: "right" }}>
+      <div className="px-3">
         <DropdownMenu
           button={{
             label: "Row actions",
@@ -95,6 +82,19 @@ const ImageRow = memo(({ image, onRemove }: ImageRowProps) => {
             },
           ]}
         />
+      </div>
+      <div className="truncate px-3" title={repositoryDisplay(image)}>
+        {repositoryDisplay(image)}
+      </div>
+      <div className="truncate px-3" title={tagDisplay(image)}>
+        {tagDisplay(image)}
+      </div>
+      <div className="truncate px-3" title={image.ID}>
+        <code className="text-xs opacity-80">{image.ID}</code>
+      </div>
+      <div className="px-3 inline-flex items-center gap-1.5">
+        <Layers size={12} className="opacity-60" aria-hidden />
+        <span>{image.Size}</span>
       </div>
     </div>
   );
@@ -283,13 +283,11 @@ export function ImageTable() {
             className="grid items-center border-b border-default text-xs font-semibold opacity-80 shrink-0"
             style={{ gridTemplateColumns: GRID_COLUMNS, height: "40px" }}
           >
+            <div className="px-3">Actions</div>
             <div className="px-3">Repository</div>
             <div className="px-3">Tag</div>
             <div className="px-3">Image ID</div>
             <div className="px-3">Size</div>
-            <div className="px-3" style={{ textAlign: "right" }}>
-              Actions
-            </div>
           </div>
 
           {/* Virtualized body — div-based with absolutely-positioned rows so the

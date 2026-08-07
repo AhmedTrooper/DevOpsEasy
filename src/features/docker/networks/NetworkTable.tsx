@@ -32,7 +32,7 @@ interface DockerNetwork extends Record<string, unknown> {
   CreatedAt: string;
 }
 
-const GRID_COLUMNS = "minmax(0, 1.4fr) 100px 100px 100px minmax(0, 1fr) 80px";
+const GRID_COLUMNS = "80px minmax(0, 1.4fr) 100px 100px 100px minmax(0, 1fr)";
 
 const SYSTEM_NETWORKS = new Set(["bridge", "host", "none"]);
 
@@ -54,25 +54,7 @@ const NetworkRow = memo(({ network, onRemove }: NetworkRowProps) => {
       className="grid items-center border-b border-default text-sm"
       style={{ gridTemplateColumns: GRID_COLUMNS, height: "100%", width: "100%" }}
     >
-      <div className="truncate px-3" title={network.Name}>
-        <span className="font-medium">{network.Name}</span>
-        {isSystem && (
-          <span className="ml-2 text-xs opacity-60">(system)</span>
-        )}
-      </div>
-      <div className="truncate px-3" title={network.Driver}>
-        {network.Driver}
-      </div>
-      <div className="truncate px-3" title={network.Scope}>
-        {network.Scope}
-      </div>
-      <div className="truncate px-3" title={network.ID}>
-        <code className="text-xs opacity-80">{network.ID}</code>
-      </div>
-      <div className="truncate px-3" title={network.Labels || "—"}>
-        <span className="text-xs opacity-70">{network.Labels || "—"}</span>
-      </div>
-      <div className="px-3" style={{ textAlign: "right" }}>
+      <div className="px-3">
         <DropdownMenu
           button={{
             label: "Row actions",
@@ -92,6 +74,24 @@ const NetworkRow = memo(({ network, onRemove }: NetworkRowProps) => {
             },
           ]}
         />
+      </div>
+      <div className="truncate px-3" title={network.Name}>
+        <span className="font-medium">{network.Name}</span>
+        {isSystem && (
+          <span className="ml-2 text-xs opacity-60">(system)</span>
+        )}
+      </div>
+      <div className="truncate px-3" title={network.Driver}>
+        {network.Driver}
+      </div>
+      <div className="truncate px-3" title={network.Scope}>
+        {network.Scope}
+      </div>
+      <div className="truncate px-3" title={network.ID}>
+        <code className="text-xs opacity-80">{network.ID}</code>
+      </div>
+      <div className="truncate px-3" title={network.Labels || "—"}>
+        <span className="text-xs opacity-70">{network.Labels || "—"}</span>
       </div>
     </div>
   );
@@ -309,6 +309,7 @@ export function NetworkTable() {
             className="grid items-center border-b border-default text-xs font-semibold opacity-80 shrink-0"
             style={{ gridTemplateColumns: GRID_COLUMNS, height: "40px" }}
           >
+            <div className="px-3">Actions</div>
             <div className="px-3 inline-flex items-center gap-1.5">
               <GitBranch size={12} aria-hidden />
               Name
@@ -317,9 +318,6 @@ export function NetworkTable() {
             <div className="px-3">Scope</div>
             <div className="px-3">Network ID</div>
             <div className="px-3">Labels</div>
-            <div className="px-3" style={{ textAlign: "right" }}>
-              Actions
-            </div>
           </div>
 
           {/* Virtualized body — div-based with absolutely-positioned rows so the
