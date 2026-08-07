@@ -32,7 +32,10 @@ interface DockerNetwork extends Record<string, unknown> {
   CreatedAt: string;
 }
 
-const GRID_COLUMNS = "80px minmax(0, 1.4fr) 100px 100px 100px minmax(0, 1fr)";
+// Fixed minimum widths so name / driver / scope / id stay readable before
+// truncation; the body scrolls horizontally when the viewport is narrower
+// than the column track's min-width (sum ≈ 700px).
+const GRID_COLUMNS = "80px minmax(180px, 1.4fr) 120px 100px 140px minmax(160px, 1fr)";
 
 const SYSTEM_NETWORKS = new Set(["bridge", "host", "none"]);
 
@@ -304,53 +307,61 @@ export function NetworkTable() {
         </div>
       ) : (
         <>
-          {/* Header pinned outside the scroll container so it stays at the top of the Card. */}
-          <div
-            className="grid items-center border-b border-default text-xs font-semibold opacity-80 shrink-0"
-            style={{ gridTemplateColumns: GRID_COLUMNS, height: "40px" }}
-          >
-            <div className="px-3">Actions</div>
-            <div className="px-3 inline-flex items-center gap-1.5">
-              <GitBranch size={12} aria-hidden />
-              Name
-            </div>
-            <div className="px-3">Driver</div>
-            <div className="px-3">Scope</div>
-            <div className="px-3">Network ID</div>
-            <div className="px-3">Labels</div>
-          </div>
-
-          {/* Virtualized body — div-based with absolutely-positioned rows so the
-              scroll region reliably fills remaining Card height on both small
-              and big screens. */}
+          {/* Single scroll container for both axes. The header sticks to the
+              top of this container while the body scrolls vertically
+              underneath, and both scroll horizontally together when the
+              viewport is narrower than the column track's min-width. */}
           <div ref={parentRef} className="flex-1 min-h-0 overflow-auto">
-            <div
-              style={{
-                height: rowVirtualizer.getTotalSize(),
-                position: "relative",
-                width: "100%",
-              }}
-            >
-              {rowVirtualizer.getVirtualItems().map((virtualRow) => {
-                const network = networks[virtualRow.index];
-                return (
-                  <div
-                    key={network.ID}
-                    data-index={virtualRow.index}
-                    ref={rowVirtualizer.measureElement}
-                    style={{
-                      position: "absolute",
-                      top: 0,
-                      left: 0,
-                      width: "100%",
-                      height: virtualRow.size,
-                      transform: `translateY(${virtualRow.start}px)`,
-                    }}
-                  >
-                    <NetworkRow network={network} onRemove={handleRemove} />
-                  </div>
-                );
-              })}
+            <div style={{ minWidth: "780px", width: "100%" }}>
+              <div
+                className="grid items-center border-b border-default text-xs font-semibold opacity-80"
+                style={{
+                  gridTemplateColumns: GRID_COLUMNS,
+                  height: "40px",
+                  position: "sticky",
+                  top: 0,
+                  backgroundColor: "var(--color-surface, transparent)",
+                  zIndex: 1,
+                }}
+              >
+                <div className="px-3">Actions</div>
+                <div className="px-3 inline-flex items-center gap-1.5">
+                  <GitBranch size={12} aria-hidden />
+                  Name
+                </div>
+                <div className="px-3">Driver</div>
+                <div className="px-3">Scope</div>
+                <div className="px-3">Network ID</div>
+                <div className="px-3">Labels</div>
+              </div>
+              <div
+                style={{
+                  height: rowVirtualizer.getTotalSize(),
+                  position: "relative",
+                  width: "100%",
+                }}
+              >
+                {rowVirtualizer.getVirtualItems().map((virtualRow) => {
+                  const network = networks[virtualRow.index];
+                  return (
+                    <div
+                      key={network.ID}
+                      data-index={virtualRow.index}
+                      ref={rowVirtualizer.measureElement}
+                      style={{
+                        position: "absolute",
+                        top: 0,
+                        left: 0,
+                        width: "100%",
+                        height: virtualRow.size,
+                        transform: `translateY(${virtualRow.start}px)`,
+                      }}
+                    >
+                      <NetworkRow network={network} onRemove={handleRemove} />
+                    </div>
+                  );
+                })}
+              </div>
             </div>
           </div>
         </>

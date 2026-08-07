@@ -30,7 +30,10 @@ interface DockerImage extends Record<string, unknown> {
   Containers: string;
 }
 
-const GRID_COLUMNS = "80px minmax(0, 1.4fr) minmax(0, 1fr) minmax(0, 1fr) 100px";
+// Fixed minimum widths so repo / tag / image ID are always readable
+// (≥10–15 chars) before any truncation. The body scrolls horizontally when
+// the viewport is narrower than the sum of these columns.
+const GRID_COLUMNS = "80px minmax(200px, 1.4fr) minmax(120px, 1fr) minmax(180px, 1fr) 100px";
 
 function repositoryDisplay(image: DockerImage): string {
   if (image.Repository === "<none>") return "<dangling>";
@@ -278,49 +281,60 @@ export function ImageTable() {
         </div>
       ) : (
         <>
-          {/* Header pinned outside the scroll container so it stays at the top of the Card. */}
-          <div
-            className="grid items-center border-b border-default text-xs font-semibold opacity-80 shrink-0"
-            style={{ gridTemplateColumns: GRID_COLUMNS, height: "40px" }}
-          >
-            <div className="px-3">Actions</div>
-            <div className="px-3">Repository</div>
-            <div className="px-3">Tag</div>
-            <div className="px-3">Image ID</div>
-            <div className="px-3">Size</div>
-          </div>
-
-          {/* Virtualized body — div-based with absolutely-positioned rows so the
-              scroll region reliably fills remaining Card height on both small
-              and big screens. */}
+          {/* Single scroll container — both axes scroll on the same element
+              so the header (sticky-top) and rows move together. The inner
+              column has a min-width so when the viewport is narrower than
+              the column track (sum of min-widths ≈ 780px) the row scrolls
+              horizontally instead of truncating mid-word. The header sticks
+              to the top of this container while the body scrolls vertically
+              underneath it. */}
           <div ref={parentRef} className="flex-1 min-h-0 overflow-auto">
-            <div
-              style={{
-                height: rowVirtualizer.getTotalSize(),
-                position: "relative",
-                width: "100%",
-              }}
-            >
-              {rowVirtualizer.getVirtualItems().map((virtualRow) => {
-                const image = images[virtualRow.index];
-                return (
-                  <div
-                    key={image.ID}
-                    data-index={virtualRow.index}
-                    ref={rowVirtualizer.measureElement}
-                    style={{
-                      position: "absolute",
-                      top: 0,
-                      left: 0,
-                      width: "100%",
-                      height: virtualRow.size,
-                      transform: `translateY(${virtualRow.start}px)`,
-                    }}
-                  >
-                    <ImageRow image={image} onRemove={handleRemove} />
-                  </div>
-                );
-              })}
+            <div style={{ minWidth: "780px", width: "100%" }}>
+              <div
+                className="grid items-center border-b border-default text-xs font-semibold opacity-80"
+                style={{
+                  gridTemplateColumns: GRID_COLUMNS,
+                  height: "40px",
+                  position: "sticky",
+                  top: 0,
+                  backgroundColor: "var(--color-surface, transparent)",
+                  zIndex: 1,
+                }}
+              >
+                <div className="px-3">Actions</div>
+                <div className="px-3">Repository</div>
+                <div className="px-3">Tag</div>
+                <div className="px-3">Image ID</div>
+                <div className="px-3">Size</div>
+              </div>
+              <div
+                style={{
+                  height: rowVirtualizer.getTotalSize(),
+                  position: "relative",
+                  width: "100%",
+                }}
+              >
+                {rowVirtualizer.getVirtualItems().map((virtualRow) => {
+                  const image = images[virtualRow.index];
+                  return (
+                    <div
+                      key={image.ID}
+                      data-index={virtualRow.index}
+                      ref={rowVirtualizer.measureElement}
+                      style={{
+                        position: "absolute",
+                        top: 0,
+                        left: 0,
+                        width: "100%",
+                        height: virtualRow.size,
+                        transform: `translateY(${virtualRow.start}px)`,
+                      }}
+                    >
+                      <ImageRow image={image} onRemove={handleRemove} />
+                    </div>
+                  );
+                })}
+              </div>
             </div>
           </div>
         </>

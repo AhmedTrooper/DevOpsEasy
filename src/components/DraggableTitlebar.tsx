@@ -10,6 +10,7 @@ import {
   Minus,
   ArrowLeft,
   ArrowRight,
+  Activity,
 } from "lucide-react";
 import { Heading } from "@astryxdesign/core";
 import { Switch } from "@astryxdesign/core/Switch";
@@ -20,7 +21,7 @@ import { useUIStore } from "../store/uiStore";
 const appWindow = getCurrentWindow();
 
 export default function DraggableTitlebar() {
-  const { toggleSidebar, dockPos, cycleDockPos } = useUIStore();
+  const { toggleSidebar, dockPos, cycleDockPos, isOpsPanelOpen, toggleOpsPanel } = useUIStore();
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [isWidgetDraggable, setIsWidgetDraggable] = useState(true);
   const router = useRouter();
@@ -160,6 +161,22 @@ export default function DraggableTitlebar() {
           </div>
 
           <div className={`${isVertical ? "h-px w-4" : "w-px h-4"} bg-gray-600 mx-1`} />
+
+          {/* Operations panel toggle. Pressing it flips the right rail that
+              shows in-flight pull/remove progress on Images and Networks
+              pages. */}
+          <button
+            type="button"
+            aria-label={isOpsPanelOpen ? "Hide operations panel" : "Show operations panel"}
+            title={isOpsPanelOpen ? "Hide operations panel" : "Show operations panel"}
+            onClick={toggleOpsPanel}
+            data-tauri-drag-region={undefined}
+            className={`flex items-center justify-center p-1 rounded-md transition-colors outline-none focus:outline-none border-none bg-transparent hover:bg-surface-hover ${
+              isOpsPanelOpen ? "text-primary" : "text-secondary hover:text-primary"
+            }`}
+          >
+            <Activity size={16} />
+          </button>
 
           {/* Window Controls */}
           <div
