@@ -25,6 +25,7 @@ pub fn run() {
             docker::images::docker_remove_image,
             docker::images::get_image_operations,
             git::repos::git_status,
+            aws::profiles::aws_list_profiles,
         ])
         .setup(|app| {
             app.manage(docker::images::new_ops_map());
