@@ -5,8 +5,6 @@ import { useAppTheme } from "../context/ThemeContext";
 
 import { useUIStore } from "../store/uiStore";
 
-import { MobileNav } from "@astryxdesign/core/MobileNav";
-
 // `isExact` lets the caller distinguish section roots (which should highlight
 // on exact match) from section entries (which should highlight on any nested
 // route, e.g. `/docker/containers` still highlights "Docker").
@@ -103,14 +101,6 @@ export function Sidebar() {
     >
       <NavItems />
     </SideNav>
-  );
-}
-
-export function MobileSidebar() {
-  return (
-    <MobileNav header={<div className="font-bold text-lg px-4 py-4">Portside</div>}>
-      <NavItems />
-    </MobileNav>
   );
 }
 

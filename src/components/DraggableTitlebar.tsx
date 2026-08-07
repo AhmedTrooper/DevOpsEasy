@@ -13,7 +13,6 @@ import {
 } from "lucide-react";
 import { Heading } from "@astryxdesign/core";
 import { Switch } from "@astryxdesign/core/Switch";
-import { MobileNavToggle } from "@astryxdesign/core/MobileNav";
 import { getCurrentWindow } from "@tauri-apps/api/window";
 import { useRouter, useRouterState } from "@tanstack/react-router";
 import { useUIStore } from "../store/uiStore";
@@ -89,18 +88,9 @@ export default function DraggableTitlebar() {
             {isVertical ? <GripHorizontal size={20} /> : <GripVertical size={20} />}
           </div>
 
-          {/* Mobile Nav Drawer Toggle (visible on small screens) */}
-          <div className="md:hidden z-10 flex items-center justify-center">
-            <MobileNavToggle>
-              <div className="flex items-center justify-center p-1 hover:bg-surface-hover rounded-md cursor-pointer transition-colors outline-none focus:outline-none">
-                <Menu size={18} />
-              </div>
-            </MobileNavToggle>
-          </div>
-
-          {/* Sidebar Toggle (visible on large screens) */}
+          {/* Sidebar Toggle */}
           <button
-            className="hidden md:flex items-center justify-center p-1 hover:bg-surface-hover rounded-md cursor-pointer transition-colors z-10 outline-none focus:outline-none border-none bg-transparent"
+            className="flex items-center justify-center p-1 hover:bg-surface-hover rounded-md cursor-pointer transition-colors z-10 outline-none focus:outline-none border-none bg-transparent"
             onClick={toggleSidebar}
             title="Toggle Sidebar"
           >
@@ -149,7 +139,7 @@ export default function DraggableTitlebar() {
               letterSpacing: "0.5px",
               writingMode: isVertical ? "vertical-rl" : "horizontal-tb",
             }}
-            className="hidden sm:block select-none pointer-events-none"
+            className="select-none pointer-events-none"
           >
             Portside
           </Heading>

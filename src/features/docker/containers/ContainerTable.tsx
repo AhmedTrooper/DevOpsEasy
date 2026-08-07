@@ -210,9 +210,10 @@ const ContainerRow = memo(({ container, onAction }: ContainerRowProps) => {
       <div className="px-3" style={{ textAlign: "right" }}>
         <DropdownMenu
           button={{
-            label: "Actions",
+            label: "Row actions",
             icon: <Icon icon={MoreVertical} />,
             variant: "ghost",
+            isIconOnly: true,
           }}
           hasChevron={false}
           items={[

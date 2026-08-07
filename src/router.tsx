@@ -1,7 +1,7 @@
 import { createRootRoute, createRoute, createRouter, Outlet } from "@tanstack/react-router";
 import { AppShell } from "@astryxdesign/core";
 import { ThemeProvider } from "./context/ThemeContext";
-import { Sidebar, MobileSidebar } from "./components/Sidebar";
+import { Sidebar } from "./components/Sidebar";
 import HomePage from "./features/home/HomePage";
 import AboutPage from "./features/about/AboutPage";
 import WorkspacesPage from "./features/workspaces/WorkspacesPage";
@@ -21,7 +21,7 @@ function AppLayout() {
       <AppShell
         contentPadding={0} // Remove padding here, add it to Outlet wrapper if needed
         sideNav={<Sidebar />}
-        mobileNav={{ hasToggle: false, content: <MobileSidebar /> }}
+        mobileNav={{ breakpoint: "none", hasToggle: false }}
       >
         <div className={`flex w-full h-full ${dockPos === 'top' || dockPos === 'bottom' ? 'flex-col' : 'flex-row'}`}>
           {dockPos === 'top' && <DraggableTitlebar />}

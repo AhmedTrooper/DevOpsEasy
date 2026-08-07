@@ -24,7 +24,7 @@ export function ImagePage() {
         {/* Hidden on small screens so the table isn't squeezed. The flex
             container naturally stacks at the lg breakpoint via the panel's
             own responsive CSS. */}
-        <div className="hidden lg:block w-[340px] min-h-0">
+        <div className="w-[340px] min-h-0">
           <ActiveOpsPanel />
         </div>
       </HStack>
